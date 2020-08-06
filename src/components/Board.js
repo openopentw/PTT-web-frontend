@@ -1,8 +1,11 @@
 import React, {Component} from 'react'
 
-import {ButtonBase, Card, CardContent, Container, Typography} from '@material-ui/core'
+import {ButtonBase, Container, Card, Paper, Typography} from '@material-ui/core'
+import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import Hotkeys from 'react-hot-keys'
+
+import Vars from '../vars/vars.js'
 
 class KeysRight extends Component {
   render() {
@@ -43,27 +46,34 @@ class KeysUpDown extends Component {
 
 class Board extends Component {
   handleScroll = () => {
-    let elm = document.getElementById('board')
+    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
     const {boardFetching, handleBoardMore} = this.props
-    if (!boardFetching && elm.scrollTop < 512) {
-      console.log(elm.scrollTop)
+    if (!boardFetching && elm.scrollTop < 1024) {
+      // console.log(elm.scrollTop)
       handleBoardMore()
     }
   }
 
   componentDidMount = () => {
-    let elm = document.getElementById('board')
-    elm.scrollTop = elm.scrollHeight
-    elm.addEventListener('scroll', this.handleScroll)
+    const {boardTop, boardI, theme} = this.props
+    let elm = theme === Vars.theme.eink? document.body : document.scrollingElement
+    elm.scrollTop = boardTop.InI !== boardI? elm.scrollHeight : boardTop.top
+    window.addEventListener('scroll', this.handleScroll)
+    this.props.boardFetchComplete()
+  }
+
+  componentDidUpdate = () => {
+    // const {boardFetchComplete} = this.props
+    // boardFetchComplete()
   }
 
   componentWillUnmount = () => {
-    let elm = document.getElementById('board')
-    elm.removeEventListener('scroll', this.handleScroll)
+    window.removeEventListener('scroll', this.handleScroll)
+    this.props.updateTop(Vars.overlay.board)
   }
 
   render() {
-    const {postList, postI, isView, handlePostChange, handlePostIChange} = this.props
+    const {theme, postList, postI, isView, handlePostChange, handlePostIChange} = this.props
     return (
       <Container maxWidth="sm" style={{marginTop: 30}}>
         {postList.slice(0).reverse().map((a, i) => (
@@ -72,7 +82,9 @@ class Board extends Component {
             style={{
               // margin: 15,
               display: 'flex',
-              // backgroundColor: 'transparent',
+              backgroundColor: theme === Vars.theme.eink? 'white': '',
+              border: theme === Vars.theme.eink? '2px solid black' : '',
+              borderRadius: 5,
               boxShadow: 'none',
             }}
           >
@@ -83,33 +95,44 @@ class Board extends Component {
                   handlePostIChange(postList.length - 1 - i)
                 }
               }}
-              style={{display: 'flex',
-                      justifyContent: 'flex-start',
-                      textAlign: 'initial',
-                      width: '100%'}}
+              style={theme === Vars.theme.eink? {
+                display: 'flex',
+                justifyContent: 'flex-start',
+                textAlign: 'initial',
+                width: '100%',
+                paddingLeft: 32,
+                paddingRight: 32,
+              } : {
+                display: 'flex',
+                justifyContent: 'flex-start',
+                textAlign: 'initial',
+                width: '100%',
+              }}
             >
-              <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
-                <ArrowForwardIcon style={{color: postI === postList.length - 1 - i? 'black' : 'transparent'}}/>
-              </div>
+              {theme === Vars.theme.eink? null : (
+                <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
+                  <ArrowForwardIcon style={{color: postI === postList.length - 1 - i? 'black' : 'transparent'}}/>
+                </div>
+              )}
               <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
                 <Typography variant="h5">
                   {a.push_number}
                 </Typography>
               </div>
               <div style={{}}>
-                <CardContent style={{paddingTop: 8, paddingBottom: 8}}>
+                <div style={{paddingTop: 8, paddingBottom: 8}}>
                   <Typography variant="h5" color="textPrimary">
                     {a.title}
                   </Typography>
                   <Typography variant="subtitle1" color="textSecondary">
                     {a.author}
                   </Typography>
-                </CardContent>
+                </div>
               </div>
             </ButtonBase>
           </Card>
         ))}
-        {isView? (
+        {theme !== Vars.theme.eink? (
           <React.Fragment>
             <KeysRight handlePostChange={handlePostChange} />
             <KeysUpDown

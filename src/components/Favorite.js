@@ -1,8 +1,11 @@
 import React, {Component} from 'react'
 
-import {ButtonBase, Card, CardContent, Container, Divider, Typography} from '@material-ui/core'
+import {ButtonBase, Card, Container, Divider, Paper, Typography} from '@material-ui/core'
+import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import Hotkeys from 'react-hot-keys'
+
+import Vars from '../vars/vars.js'
 
 class KeysRight extends Component {
   render() {
@@ -47,50 +50,72 @@ class KeysUpDown extends Component {
 }
 
 class Favorite extends Component {
+  componentDidMount = () => {
+    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+    elm.scrollTop = this.props.favTop
+  }
+
+  componentWillUnmount = async () => {
+    this.props.updateTop(Vars.overlay.initial)
+  }
+
   render() {
-    const {boardList, boardI, isView, handleBoardChange, handleBoardIChange} = this.props
+    const {theme, boardList, boardI, isView, handleBoardChange, handleBoardIChange} = this.props
     return (
       <Container maxWidth="sm" style={{marginTop: 30}}>
         {boardList.map((b, i) => (
           <Card
             key={i}
             style={{
-              // margin: 15,
-              display: 'flex',
-              // backgroundColor: 'transparent',
-              backgroundColor: b.board === '----------'? 'transparent' : '',
+              // display: 'flex',
+              backgroundColor: b.board === '----------'? 'transparent' :
+                               theme === Vars.theme.eink? 'white': '',
+              border: b.board === '----------'? 'transparent' :
+                      theme === Vars.theme.eink? '2px solid black' : '',
+              borderRadius: 5,
               boxShadow: 'none',
             }}
           >
             <ButtonBase
               onClick={handleBoardChange}
               onMouseEnter={() => {handleBoardIChange(i)}}
-              style={{display: 'flex',
-                      justifyContent: 'flex-start',
-                      textAlign: 'initial',
-                      width: '100%'}}
+              style={theme === Vars.theme.eink? {
+                display: 'flex',
+                justifyContent: 'flex-start',
+                textAlign: 'initial',
+                width: '100%',
+                paddingLeft: 32,
+                paddingRight: 32,
+              } : {
+                display: 'flex',
+                justifyContent: 'flex-start',
+                textAlign: 'initial',
+                width: '100%',
+              }}
             >
-              <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
-                <ArrowForwardIcon style={{color: boardI === i? 'black' : 'transparent'}}/>
-              </div>
+              {theme === Vars.theme.eink? null : (
+                <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
+                  <ArrowForwardIcon style={{color: boardI === i? 'black' : 'transparent'}}/>
+                </div>
+              )}
               {b.board === '----------'? (
-                <Divider />
+                <div style={{height: 32}}></div>
               ) : (
                 <div style={{}}>
-                  <CardContent style={{paddingTop: 8, paddingBottom: 8}}>
+                  <div style={{paddingTop: 8, paddingBottom: 8}}>
                     <Typography variant="h5" color="textPrimary">
                       {b.board}
                     </Typography>
                     <Typography variant="subtitle1" color="textSecondary">
                       {b.title}
                     </Typography>
-                  </CardContent>
+                  </div>
                 </div>
               )}
             </ButtonBase>
           </Card>
         ))}
-        {isView? (
+        {theme !== Vars.theme.eink? (
           <React.Fragment>
             <KeysRight handleBoardChange={handleBoardChange} />
             <KeysUpDown

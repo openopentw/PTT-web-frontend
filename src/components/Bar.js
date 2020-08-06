@@ -4,6 +4,8 @@ import {AppBar, Button, IconButton, Toolbar, Tabs, Tab, Typography} from '@mater
 import {Menu, ArrowBack, ExitToApp} from '@material-ui/icons'
 import Hotkeys from 'react-hot-keys'
 
+import Vars from '../vars/vars.js'
+
 class Keys extends Component {
   render() {
     const {handleBack} = this.props
@@ -18,9 +20,19 @@ class Keys extends Component {
 
 class Bar extends Component {
   render() {
-    const {vars, bar, tab, boardName, post, isView, handleLogout, handleBack, handleTabChange} = this.props
+    const {theme, bar, tab, boardName, post, isView, handleLogout, handleBack, handleTabChange} = this.props
+    // if (theme === Vars.theme.eink) {
+    //   return null
+    // }
     return (
-      <AppBar position="sticky" color="default">
+      <React.Fragment>
+      <AppBar
+        color="default"
+        position="sticky"
+        style={{
+          backgroundColor: theme === Vars.theme.eink? 'white' : '',
+        }}
+      >
         <Toolbar>
           <IconButton
             edge="start"
@@ -28,36 +40,36 @@ class Bar extends Component {
             aria-label="menu"
             style={{marginRight: 15}}
             onClick={() => {
-              if (!(bar === vars.bar.notLogin || bar === vars.bar.lobby)) {
+              if (!(bar === Vars.bar.notLogin || bar === Vars.bar.lobby)) {
                 handleBack()
               }
             }}
           >
-            {(bar === vars.bar.notLogin || bar === vars.bar.lobby)? (
+            {(bar === Vars.bar.notLogin || bar === Vars.bar.lobby)? (
               <Menu />
             ) : (
               <ArrowBack />
             )}
           </IconButton>
           <div style={{flexGrow: 1}}>
-            {(!(bar === vars.bar.notLogin || bar === vars.bar.lobby) && isView)? (
+            {(!(bar === Vars.bar.notLogin || bar === Vars.bar.lobby) && isView)? (
               <Keys handleBack={handleBack} />
             ) : null}
-            {bar === vars.bar.notLogin? (
+            {bar === Vars.bar.notLogin? (
               <Tabs value={tab} onChange={(e, v) => {handleTabChange(v)}}>
                 <Tab label="Login" />
                 <Tab label="About" />
               </Tabs>
-            ) : bar === vars.bar.lobby? (
+            ) : bar === Vars.bar.lobby? (
               <Tabs value={tab} onChange={(e, v) => {handleTabChange(v)}}>
                 <Tab label="Favorite" />
                 <Tab label="About" />
               </Tabs>
-            ) : bar === vars.bar.board? (
+            ) : bar === Vars.bar.board? (
               <Typography variant="h5">
                 {boardName}
               </Typography>
-            ) : bar === vars.bar.article? (
+            ) : bar === Vars.bar.article? (
               <Typography variant="h5">
                 {post.title}
               </Typography>
@@ -67,7 +79,7 @@ class Bar extends Component {
               </Tabs>
             )}
           </div>
-          {bar !== vars.bar.notLogin? (
+          {bar !== Vars.bar.notLogin? (
             <Button color="inherit" onClick={handleLogout}>
               <ExitToApp style={{marginRight: 10}} />
               Logout
@@ -75,6 +87,7 @@ class Bar extends Component {
           ) : null}
         </Toolbar>
       </AppBar>
+      </React.Fragment>
     )
   }
 }

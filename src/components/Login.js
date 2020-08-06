@@ -4,6 +4,25 @@ import {Helmet} from "react-helmet"
 
 import {Button, Container, Typography, TextField} from '@material-ui/core'
 
+import Vars from '../vars/vars.js'
+
+const test = () => (
+  <div id="test">
+    <Typography variant="h3" gutterBottom>
+      A: {document.body.clientHeight}
+    </Typography>
+    <Typography variant="h3" gutterBottom>
+      A: {window.innerHeight}
+    </Typography>
+    <Typography variant="h3" gutterBottom>
+      A: {document.documentElement.clientHeight}
+    </Typography>
+    <Typography variant="h3" gutterBottom>
+      A: {document.body.clientHeight}
+    </Typography>
+  </div>
+)
+
 class Login extends Component {
   handleFormChange = (e) => {
     const {handleInputChange} = this.props
@@ -14,15 +33,16 @@ class Login extends Component {
   }
 
   render() {
-    const {handleLogin} = this.props
+    const {theme, handleLogin} = this.props
     return (
       <Container maxWidth="xs" style={{marginTop: 50}}>
         <Helmet>
-          <style>{`body { background-color: ${colors.grey[100]}; }`}</style>
+          <style>{`body { background-color: ${theme === Vars.theme.eink? 'white' : colors.grey[100]}; }`}</style>
         </Helmet>
         <Typography variant="h2" gutterBottom>
           Login
         </Typography>
+        {/* <test /> */}
         <form onSubmit={(e) => {handleLogin(); e.preventDefault()}} >
           <TextField
             label="user ID"

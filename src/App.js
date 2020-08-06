@@ -4,61 +4,54 @@ import {createMuiTheme, ThemeProvider} from '@material-ui/core/styles'
 import {Helmet} from "react-helmet"
 
 import palette from './themes/palette.js'
+import EinkPalette from './themes/eink_palette.js'
 import typography from './themes/typography.js'
 
 // apis
 import Api from './apis/PyApi.js'
+import Vars from './vars/vars.js'
 
 // components
 import About from './components/About.js'
 import Bar from './components/Bar.js'
 import Board from './components/Board.js'
+import Fabs from './components/Fabs.js'
 import Favorite from './components/Favorite.js'
 import Login from './components/Login.js'
 import Post from './components/Post.js'
 
 import './App.css'
 
+const defaultTheme = createMuiTheme({
+  palette,
+  typography,
+})
+
+const einkTheme = createMuiTheme({
+  EinkPalette,
+  typography,
+})
+
 class App extends Component {
-  vars = (() => {
-    let vars = {
-      bar: {
-        notLogin: 0,
-        lobby: 1,
-        board: 2,
-        article: 3,
-      },
-      page: {
-        // TODO: delete some
-        login: 0,
-        about: 1,
-        favorite: 2,
-        board: 3,
-        article: 4,
-      },
-      overlay: {
-        initial: 1200,
-        board: 1300,
-        article: 1400,
-      },
-      tabs: {}, // set up later
-      board: {
-        emptyBoard: '----------',
-      }
-    }
-    vars.tabs = {
-      [vars.bar.notLogin]: [vars.page.login, vars.page.about],
-      [vars.bar.lobby]: [vars.page.favorite, vars.page.about],
-    }
-    return vars
-  })()
+  vars = Vars
 
   state = {
+    theme: this.vars.theme.default,
     // tabs
     bar: this.vars.bar.notLogin,
     page: this.vars.page.login,
     overlay: this.vars.overlay.initial,
     tab: 0,
+    // overlay top & first_in
+    favTop: 0,
+    boardTop: {
+      top: 0,
+      InI: -1,
+    },
+    postTop: {
+      top: 0,
+      InI: -1,
+    },
     // login
     user: '',
     pass: '',
@@ -723,11 +716,6 @@ class App extends Component {
     },
   }
 
-  theme = createMuiTheme({
-    palette,
-    typography,
-  })
-
   api = new Api()
 
   // input change
@@ -798,23 +786,16 @@ class App extends Component {
         this.setState({
           overlay: this.vars.overlay.board,
           boardI,
+          boardFetching: true,
           postList,
           postI: 0,
         })
-
-        // const conSlow = await this.api.getPosts(boardList[boardI].board, 'recent', false)
-        // if (conSlow.status.status) {
-        //   // two-pointer
-        //   let slowI = 0
-        //   for (let i in postList) {
-        //     for (; slowI < conSlow.data.posts.length
-        //            && postList[i].index !== conSlow.data.posts[slowI].index; ++slowI) {}
-        //     postList[i].origin_post = conSlow.data.posts[i].origin_post
-        //   }
-        //   this.setState({postList})
-        // }
       }
     }
+  }
+
+  boardFetchComplete = () => {
+    this.setState({boardFetching: false})
   }
 
   handleBoardMore = async () => {
@@ -824,27 +805,14 @@ class App extends Component {
     const endIdx = postList[endI - 1].index - 1
     const con = await this.api.getPosts(boardList[boardI].board, endIdx)
     if (con.status.status) {
-      let elm = document.getElementById('board')
-      const oldBottom = elm.scrollHeight - elm.scrollTop
       let newPostList = con.data.posts
+      let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+      const oldToEnd = elm.scrollHeight - elm.scrollTop 
       await this.setState({
         postList: postList.concat(newPostList),
       })
-      elm.scrollTop = elm.scrollHeight - oldBottom
+      elm.scrollTop = elm.scrollHeight - oldToEnd
       this.setState({boardFetching: false})
-
-      // const conSlow = await this.api.getPosts(boardList[boardI].board, endIdx, false)
-      // if (conSlow.status.status) {
-      //   // TODO: bad here since maybe there is newer slow
-      //   // two-pointer
-      //   let slowI = 0;
-      //   for (let i in newPostList) {
-      //     for (; slowI < conSlow.data.posts.length
-      //            && newPostList[i].index !== conSlow.data.posts[slowI].index; ++slowI) {}
-      //     newPostList[i].origin_post = conSlow.data.posts[i].origin_post
-      //   }
-      //   this.setState({postList})
-      // }
     }
   }
 
@@ -859,6 +827,29 @@ class App extends Component {
       this.setState({
         post: con.data.post,
         overlay: this.vars.overlay.article,
+      })
+    }
+  }
+
+  // update tops
+
+  updateTop = async (overlay) => {
+    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+    if (overlay === Vars.overlay.initial) {
+      await this.setState({favTop: elm.scrollTop})
+    } else if (overlay === Vars.overlay.board) {
+      await this.setState({
+        boardTop: {
+          top: elm.scrollTop,
+          InI: this.state.boardI,
+        },
+      })
+    } else { // post
+      await this.setState({
+        postTop: {
+          top: elm.scrollTop,
+          InI: this.state.postI,
+        },
       })
     }
   }
@@ -918,27 +909,23 @@ class App extends Component {
     const {postI, boardFetching, bar, page, tab, boardList, boardI, postList, post, overlay} = this.state
     const {vars} = this
     return (
-      <React.Fragment>
-        <ThemeProvider theme={this.theme}>
-          <Helmet>
-            <style>
-              {`body {
-                background-color: ${colors.grey[300]};
-                overflow: ${overlay === vars.overlay.initial? 'auto' : 'hidden'};
-              }`}
-            </style>
-          </Helmet>
+      <ThemeProvider theme={this.state.theme === Vars.theme.eink? einkTheme : defaultTheme}>
+        <Helmet>
+          <style>
+            {`body {
+              background-color: ${this.state.theme === Vars.theme.eink? 'white': colors.grey[300]};
+            }`}
+          </style>
+        </Helmet>
+        {overlay === Vars.overlay.initial? (
           <div
             id="overlay-initial"
             style={{
-              zIndex: vars.overlay.initial,
-              backgroundColor: colors.grey[300],
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              overflow: overlay === vars.overlay.initial? 'auto' : 'hidden',
+              backgroundColor: this.state.theme === Vars.theme.eink? 'white' : colors.grey[300],
             }}
           >
             <Bar
-              vars={vars}
+              theme={this.state.theme}
               bar={bar}
               tab={tab}
               post={postList[postI]}
@@ -950,14 +937,18 @@ class App extends Component {
             />
             {page === vars.page.login? (
               <Login
+                theme={this.state.theme}
                 handleInputChange={this.handleInputChange}
                 handleLogin={this.handleLogin}
               />
             ) : page === vars.page.favorite? (
               <Favorite
+                theme={this.state.theme}
                 boardList={boardList}
                 boardI={boardI}
+                favTop={this.state.favTop}
                 isView={overlay === vars.overlay.initial}
+                updateTop={this.updateTop}
                 handleBoardIChange={this.handleBoardIChange}
                 handleBoardChange={this.handleBoardChange}
               />
@@ -965,63 +956,68 @@ class App extends Component {
               <About />
             )}
           </div>
-          {overlay >= this.vars.overlay.board? (
-            <div
-              id="board"
-              style={{
-                zIndex: vars.overlay.board,
-                backgroundColor: colors.grey[300],
-                position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                overflow: overlay === vars.overlay.board? 'auto' : 'hidden',
-              }}
-            >
-              <Bar
-                vars={this.vars}
-                bar={vars.bar.board}
-                tab={tab}
-                post={postList[postI]}
-                boardName={boardList[boardI].board}
-                isView={overlay === vars.overlay.board}
-                handleLogout={this.handleLogout}
-                handleBack={this.handleBack}
-                handleTabChange={this.handleTabChange}
-              />
-              <Board
-                postList={postList}
-                postI={postI}
-                boardFetching={boardFetching}
-                isView={overlay === vars.overlay.board}
-                handleBoardMore={this.handleBoardMore}
-                handlePostIChange={this.handlePostIChange}
-                handlePostChange={this.handlePostChange}
-              />
-            </div>
-          ) : null}
-          {overlay >= this.vars.overlay.article? (
-            <div style={{
-              zIndex: vars.overlay.article,
-              backgroundColor: colors.grey[100],
-              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-              overflow: overlay === this.vars.overlay.article? 'auto' : 'hidden',
-            }}>
-              <Bar
-                vars={this.vars}
-                bar={vars.bar.article}
-                tab={tab}
-                post={postList[postI]}
-                boardName={boardList[boardI].board}
-                isView={overlay === vars.overlay.article}
-                handleLogout={this.handleLogout}
-                handleBack={this.handleBack}
-                handleTabChange={this.handleTabChange}
-              />
-              <Post
-                post={post}
-              />
-            </div>
-          ) : null}
-        </ThemeProvider>
-      </React.Fragment>
+        ) : overlay === this.vars.overlay.board? (
+          <div
+            id="board"
+            style={{
+              backgroundColor: this.state.theme === Vars.theme.eink? 'white' : colors.grey[300],
+            }}
+          >
+            <Bar
+              theme={this.state.theme}
+              bar={vars.bar.board}
+              tab={tab}
+              post={postList[postI]}
+              boardName={boardList[boardI].board}
+              isView={overlay === vars.overlay.board}
+              handleLogout={this.handleLogout}
+              handleBack={this.handleBack}
+              handleTabChange={this.handleTabChange}
+            />
+            <Board
+              theme={this.state.theme}
+              postList={postList}
+              postI={postI}
+              boardFetching={boardFetching}
+              isView={overlay === vars.overlay.board}
+              boardI={this.state.boardI}
+              boardTop={this.state.boardTop}
+              updateTop={this.updateTop}
+              boardFetchComplete={this.boardFetchComplete}
+              handleBoardMore={this.handleBoardMore}
+              handlePostIChange={this.handlePostIChange}
+              handlePostChange={this.handlePostChange}
+            />
+          </div>
+        ) : overlay === this.vars.overlay.article? (
+          <div style={{
+            backgroundColor: this.state.theme === Vars.theme.eink? 'white' : colors.grey[100],
+          }}>
+            <Bar
+              theme={this.state.theme}
+              bar={vars.bar.article}
+              tab={tab}
+              post={postList[postI]}
+              boardName={boardList[boardI].board}
+              isView={overlay === vars.overlay.article}
+              handleLogout={this.handleLogout}
+              handleBack={this.handleBack}
+              handleTabChange={this.handleTabChange}
+            />
+            <Post
+              post={post}
+              postI={this.state.postI}
+              theme={this.state.theme}
+              postTop={this.state.postTop}
+              updateTop={this.updateTop}
+            />
+          </div>
+        ) : null}
+        {this.state.theme === Vars.theme.eink? (
+          <Fabs
+          />
+        ) : null}
+      </ThemeProvider>
     )
   }
 }

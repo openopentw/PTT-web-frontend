@@ -6,11 +6,18 @@ import Linkify from 'linkifyjs/react'
 
 import {Container, Divider, Typography} from '@material-ui/core'
 
+import Vars from '../vars/vars.js'
 import Push from './Push.js'
 
 class Post extends Component {
-  componentDidMount() {
-    // console.log(this.props.post)
+  componentDidMount = () => {
+    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+    const {postTop, postI} = this.props
+    elm.scrollTop = postTop.InI !== postI? 0 : postTop.top
+  }
+
+  componentWillUnmount = async () => {
+    this.props.updateTop(Vars.overlay.post)
   }
 
   regex = {
