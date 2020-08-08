@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {withRouter} from "react-router"
 import {Link} from "react-router-dom"
 
-import {ButtonBase, Card, Container, Divider, Paper, Typography} from '@material-ui/core'
+import {ButtonBase, Card, CircularProgress, Container, Divider, Paper, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import Hotkeys from 'react-hot-keys'
@@ -67,74 +67,92 @@ class Favorite extends Component {
     const matchUrl = this.props.match.url
     return (
       <Container maxWidth="sm" style={{marginTop: 30}}>
-        {boardList.map((b, i) => (
-          <Card
-            key={i}
-            style={{
-              // display: 'flex',
-              backgroundColor: b.board === '----------'? 'transparent' :
-                               theme === Vars.theme.eink? 'white': '',
-              border: b.board === '----------'? 'transparent' :
-                      theme === Vars.theme.eink? '2px solid black' : '',
-              borderRadius: 5,
-              boxShadow: 'none',
-            }}
-          >
-            <ButtonBase
-              component={Link}
-              to={`${matchUrl}/${b.board}`}
-              onMouseEnter={() => {handleBoardIChange(i)}}
-              style={{
-                display: 'flex',
-                justifyContent: 'flex-start',
-                textAlign: 'initial',
-                width: '100%',
-                ...(theme === Vars.theme.eink? {
-                  paddingLeft: 32,
-                  paddingRight: 32,
-                } : {}),
-                ...(b.board === Vars.board.emptyBoard? {
-                  pointerEvents: 'none',
-                } : {}),
-              }}
-            >
-              {theme === Vars.theme.eink? null : (
-                <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
-                  <ArrowForwardIcon style={{color: boardI === i? 'black' : 'transparent'}}/>
-                </div>
-              )}
-              {b.board === '----------'? (
-                <div style={{height: 32}}></div>
-              ) : (
-                <div style={{}}>
-                  <div style={{paddingTop: 8, paddingBottom: 8}}>
-                    <Typography variant="h5" color="textPrimary">
-                      {b.board}
-                    </Typography>
-                    <Typography variant="subtitle1" color="textSecondary">
-                      {b.title}
-                    </Typography>
-                  </div>
-                </div>
-              )}
-            </ButtonBase>
-          </Card>
-        ))}
-        {theme !== Vars.theme.eink? (
-          <React.Fragment>
-            <KeysRight handleBoardChange={() => {
-              const board = boardList[boardI].board
-              if (board !== Vars.board.emptyBoard) {
-                this.props.history.push(`${matchUrl}/${board}`)
-              }
-            }} />
-            <KeysUpDown
-              boardI={boardI}
-              boardSize={boardList.length}
-              handleBoardIChange={handleBoardIChange}
+        {this.props.fetching? (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            // minHeight: '70vh',
+          }}>
+            <CircularProgress
+              thickness={2}
+              size={64}
+              style={{color: 'black'}}
             />
+          </div>
+        ) : (
+          <React.Fragment>
+            {boardList.map((b, i) => (
+              <Card
+                key={i}
+                style={{
+                  // display: 'flex',
+                  backgroundColor: b.board === '----------'? 'transparent' :
+                                   theme === Vars.theme.eink? 'white': '',
+                  border: b.board === '----------'? 'transparent' :
+                          theme === Vars.theme.eink? '2px solid black' : '',
+                  borderRadius: 5,
+                  boxShadow: 'none',
+                }}
+              >
+                <ButtonBase
+                  component={Link}
+                  to={`${matchUrl}/${b.board}`}
+                  onMouseEnter={() => {handleBoardIChange(i)}}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    textAlign: 'initial',
+                    width: '100%',
+                    ...(theme === Vars.theme.eink? {
+                      paddingLeft: 32,
+                      paddingRight: 32,
+                    } : {}),
+                    ...(b.board === Vars.board.emptyBoard? {
+                      pointerEvents: 'none',
+                    } : {}),
+                  }}
+                >
+                  {theme === Vars.theme.eink? null : (
+                    <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
+                      <ArrowForwardIcon style={{color: boardI === i? 'black' : 'transparent'}}/>
+                    </div>
+                  )}
+                  {b.board === '----------'? (
+                    <div style={{height: 32}}></div>
+                  ) : (
+                    <div style={{}}>
+                      <div style={{paddingTop: 8, paddingBottom: 8}}>
+                        <Typography variant="h5" color="textPrimary">
+                          {b.board}
+                        </Typography>
+                        <Typography variant="subtitle1" color="textSecondary">
+                          {b.title}
+                        </Typography>
+                      </div>
+                    </div>
+                  )}
+                </ButtonBase>
+              </Card>
+            ))}
+            {theme !== Vars.theme.eink? (
+              <React.Fragment>
+                <KeysRight handleBoardChange={() => {
+                  const board = boardList[boardI].board
+                  if (board !== Vars.board.emptyBoard) {
+                    this.props.history.push(`${matchUrl}/${board}`)
+                  }
+                }} />
+                <KeysUpDown
+                  boardI={boardI}
+                  boardSize={boardList.length}
+                  handleBoardIChange={handleBoardIChange}
+                />
+              </React.Fragment>
+            ) : null}
           </React.Fragment>
-        ) : null}
+        )}
       </Container>
     );
   }

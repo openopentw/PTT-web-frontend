@@ -11,4 +11,10 @@ export default {
   board: {
     emptyBoard: '----------',
   },
+  severity: {
+    info: "info",
+    success: "success",
+    warning: "warning",
+    error: "error",
+  },
 }

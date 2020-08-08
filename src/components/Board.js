@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {withRouter} from "react-router"
 import {Link} from "react-router-dom"
 
-import {ButtonBase, Container, Card, Paper, Typography} from '@material-ui/core'
+import {ButtonBase, CircularProgress, Container, Card, Paper, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import Hotkeys from 'react-hot-keys'
@@ -49,8 +49,8 @@ class KeysUpDown extends Component {
 class Board extends Component {
   handleScroll = () => {
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
-    const {boardFetching, handleBoardMore} = this.props
-    if (!boardFetching && elm.scrollTop < 1024) {
+    const {fetchingMore, handleBoardMore} = this.props
+    if (!fetchingMore && elm.scrollTop < 1024) {
       // console.log(elm.scrollTop)
       handleBoardMore()
     }
@@ -78,77 +78,92 @@ class Board extends Component {
     const matchUrl = this.props.match.url
     return (
       <div style={{backgroundColor: theme === Vars.theme.eink? 'white' : colors.grey[300]}} >
-        <Container maxWidth="sm" style={{marginTop: 30}}>
-          {postList.slice(0).reverse().map((a, i) => (
-            <Card
-              key={a.index}
-              style={{
-                // margin: 15,
-                display: 'flex',
-                backgroundColor: theme === Vars.theme.eink? 'white': '',
-                border: theme === Vars.theme.eink? '2px solid black' : '',
-                borderRadius: 5,
-                boxShadow: 'none',
-              }}
-            >
-              <ButtonBase
-                component={Link}
-                to={`${matchUrl}/${a.aid}`}
-                onMouseEnter={() => {
-                  if (postI !== postList.length - 1 - i) {
-                    handlePostIChange(postList.length - 1 - i)
-                  }
-                }}
-                style={theme === Vars.theme.eink? {
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          // minHeight: '70vh',
+        }}>
+          <CircularProgress
+            thickness={2}
+            size={64}
+            style={{color: 'black'}}
+          />
+        </div>
+        {this.props.fetching? null : (
+          <Container maxWidth="sm" style={{marginTop: 30}}>
+            {postList.slice(0).reverse().map((a, i) => (
+              <Card
+                key={a.index}
+                style={{
+                  // margin: 15,
                   display: 'flex',
-                  justifyContent: 'flex-start',
-                  textAlign: 'initial',
-                  width: '100%',
-                  paddingLeft: 32,
-                  paddingRight: 32,
-                } : {
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  textAlign: 'initial',
-                  width: '100%',
+                  backgroundColor: theme === Vars.theme.eink? 'white': '',
+                  border: theme === Vars.theme.eink? '2px solid black' : '',
+                  borderRadius: 5,
+                  boxShadow: 'none',
                 }}
               >
-                {theme === Vars.theme.eink? null : (
+                <ButtonBase
+                  component={Link}
+                  to={`${matchUrl}/${a.aid}`}
+                  onMouseEnter={() => {
+                    if (postI !== postList.length - 1 - i) {
+                      handlePostIChange(postList.length - 1 - i)
+                    }
+                  }}
+                  style={theme === Vars.theme.eink? {
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    textAlign: 'initial',
+                    width: '100%',
+                    paddingLeft: 32,
+                    paddingRight: 32,
+                  } : {
+                    display: 'flex',
+                    justifyContent: 'flex-start',
+                    textAlign: 'initial',
+                    width: '100%',
+                  }}
+                >
+                  {theme === Vars.theme.eink? null : (
+                    <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
+                      <ArrowForwardIcon style={{color: postI === postList.length - 1 - i? 'black' : 'transparent'}}/>
+                    </div>
+                  )}
                   <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
-                    <ArrowForwardIcon style={{color: postI === postList.length - 1 - i? 'black' : 'transparent'}}/>
-                  </div>
-                )}
-                <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
-                  <Typography variant="h5">
-                    {a.push_number}
-                  </Typography>
-                </div>
-                <div style={{}}>
-                  <div style={{paddingTop: 8, paddingBottom: 8}}>
-                    <Typography variant="h5" color="textPrimary">
-                      {a.title}
-                    </Typography>
-                    <Typography variant="subtitle1" color="textSecondary">
-                      {a.author}
+                    <Typography variant="h5">
+                      {a.push_number}
                     </Typography>
                   </div>
-                </div>
-              </ButtonBase>
-            </Card>
-          ))}
-          {theme !== Vars.theme.eink? (
-            <React.Fragment>
-              <KeysRight handlePostChange={() => {
-                this.props.history.push(`${matchUrl}/${postList[postI].aid}`)
-              }} />
-              <KeysUpDown
-                postI={postI}
-                artSize={postList.length}
-                handlePostIChange={handlePostIChange}
-              />
-            </React.Fragment>
-          ) : null}
-        </Container>
+                  <div style={{}}>
+                    <div style={{paddingTop: 8, paddingBottom: 8}}>
+                      <Typography variant="h5" color="textPrimary">
+                        {a.title}
+                      </Typography>
+                      <Typography variant="subtitle1" color="textSecondary">
+                        {a.author}
+                      </Typography>
+                    </div>
+                  </div>
+                </ButtonBase>
+              </Card>
+            ))}
+            {theme !== Vars.theme.eink? (
+              <React.Fragment>
+                <KeysRight handlePostChange={() => {
+                  this.props.history.push(`${matchUrl}/${postList[postI].aid}`)
+                }} />
+                <KeysUpDown
+                  postI={postI}
+                  artSize={postList.length}
+                  handlePostIChange={handlePostIChange}
+                />
+              </React.Fragment>
+            ) : null}
+          </Container>
+        )}
       </div>
     );
   }

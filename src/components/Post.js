@@ -4,7 +4,7 @@ import {Helmet} from "react-helmet"
 import Linkify from 'linkifyjs/react'
 import {withRouter} from "react-router"
 
-import {Container, Divider, Typography} from '@material-ui/core'
+import {CircularProgress, Container, Divider, Typography} from '@material-ui/core'
 
 import Vars from '../vars/Vars.js'
 import Push from './Push.js'
@@ -55,60 +55,78 @@ class Post extends Component {
         <Helmet>
           <style>{`body { background-color: ${colors.grey[100]}; }`}</style>
         </Helmet>
-        <div style={{marginBottom: 30}}>
-          <Typography variant="h5" gutterBottom align="center" style={{fontWeight: 'bold', marginBottom: 10}}>
-            {post.title}
-          </Typography>
-          <Typography variant="subtitle1" gutterBottom align="center" style={{color: 'grey'}}>
-            作者 {post.author}
-          </Typography>
-          <Typography variant="subtitle1" gutterBottom align="center" style={{color: 'grey'}}>
-            時間 {post.date}
-          </Typography>
-        </div>
-        <Divider />
-        {origin_post.map((p, i) => !p? ( // 空行
-          <div key={i} style={{height: 30}}/>
-        ) : ((i < 4 && p[1] === '作' && p[2] === '者') // is header
-             || (i < 4 && p[1] === '標' && p[2] === '題')
-             || (i < 4 && p[1] === '時' && p[2] === '間')
-             || (i < 4 && p[1] === '─' && p[2] === '─'))? (
-          null
-        ) : this.regex.push.isPush.test(p)? (
-          <Push
-            key={i}
-            p={{
-              author: this.regex.push.author.exec(p)[1],
-              time: this.regex.push.time.exec(p)[1],
-              type: this.regex.push.type.exec(p)[1],
-              content: this.regex.push.content.exec(p)[1],
-            }}
-            theme={this.props.theme}
-            displayAuthor={(() => {
-              const oldAuthor = (' ' + lastAuthor).slice(1)
-              lastAuthor = this.regex.push.author.exec(p)[1]
-              return oldAuthor !== lastAuthor
-            })()}
-          />
-        ) : this.regex.isEdit.test(p)? (
-          <Typography key={i} style={{fontSize: 20, color: 'green'}}>
-            {p}
-          </Typography>
-        ) : this.regex.isDel1.test(p)? (
-          <Typography key={i} style={{fontSize: 20, color: 'green'}}>
-            {p}
-          </Typography>
-        ) : this.regex.isDel2.test(p)? (
-          <Typography key={i} style={{fontSize: 20, color: 'green', marginBottom: 20}}>
-            {p}
-          </Typography>
+        {this.props.fetching? (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            // minHeight: '70vh',
+          }}>
+            <CircularProgress
+              thickness={2}
+              size={64}
+              style={{color: 'black'}}
+            />
+          </div>
         ) : (
-          <Typography key={i} style={{fontSize: 20}}>
-            <Linkify>
-              {p}
-            </Linkify>
-          </Typography>
-        ))}
+          <React.Fragment>
+            <div style={{marginBottom: 30}}>
+              <Typography variant="h5" gutterBottom align="center" style={{fontWeight: 'bold', marginBottom: 10}}>
+                {post.title}
+              </Typography>
+              <Typography variant="subtitle1" gutterBottom align="center" style={{color: 'grey'}}>
+                作者 {post.author}
+              </Typography>
+              <Typography variant="subtitle1" gutterBottom align="center" style={{color: 'grey'}}>
+                時間 {post.date}
+              </Typography>
+            </div>
+            <Divider />
+            {origin_post.map((p, i) => !p? ( // 空行
+              <div key={i} style={{height: 30}}/>
+            ) : ((i < 4 && p[1] === '作' && p[2] === '者') // is header
+                 || (i < 4 && p[1] === '標' && p[2] === '題')
+                 || (i < 4 && p[1] === '時' && p[2] === '間')
+                 || (i < 4 && p[1] === '─' && p[2] === '─'))? (
+              null
+            ) : this.regex.push.isPush.test(p)? (
+              <Push
+                key={i}
+                p={{
+                  author: this.regex.push.author.exec(p)[1],
+                  time: this.regex.push.time.exec(p)[1],
+                  type: this.regex.push.type.exec(p)[1],
+                  content: this.regex.push.content.exec(p)[1],
+                }}
+                theme={this.props.theme}
+                displayAuthor={(() => {
+                  const oldAuthor = (' ' + lastAuthor).slice(1)
+                  lastAuthor = this.regex.push.author.exec(p)[1]
+                  return oldAuthor !== lastAuthor
+                })()}
+              />
+            ) : this.regex.isEdit.test(p)? (
+              <Typography key={i} style={{fontSize: 20, color: 'green'}}>
+                {p}
+              </Typography>
+            ) : this.regex.isDel1.test(p)? (
+              <Typography key={i} style={{fontSize: 20, color: 'green'}}>
+                {p}
+              </Typography>
+            ) : this.regex.isDel2.test(p)? (
+              <Typography key={i} style={{fontSize: 20, color: 'green', marginBottom: 20}}>
+                {p}
+              </Typography>
+            ) : (
+              <Typography key={i} style={{fontSize: 20}}>
+                <Linkify>
+                  {p}
+                </Linkify>
+              </Typography>
+            ))}
+          </React.Fragment>
+        )}
       </Container>
     )
   }

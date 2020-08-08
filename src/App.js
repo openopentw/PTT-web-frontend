@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
-import {Snackbar, Slide} from '@material-ui/core'
-import {Alert} from '@material-ui/lab'
+import {Snackbar, Slide, Fade} from '@material-ui/core'
+import {Alert, AlertTitle} from '@material-ui/lab'
 import {colors} from '@material-ui/core'
 import {createMuiTheme, ThemeProvider} from '@material-ui/core/styles'
 import {Helmet} from "react-helmet"
@@ -40,6 +40,13 @@ class App extends Component {
 
   state = {
     theme: this.vars.theme.default,
+    // snackbar
+    showSnack: false,
+    snackMsg: {
+      severity: Vars.severity.info,
+      msg: '',
+      title: '',
+    },
     // overlay top & first_in
     favTop: {
       top: 0,
@@ -53,8 +60,9 @@ class App extends Component {
       top: 0,
       in: -1,
     },
-    // snackbar
-    showSnack: true,
+    // process
+    fetching: false,
+    fetchingMore: false,
     // login
     user: '',
     pass: '',
@@ -64,7 +72,6 @@ class App extends Component {
     boardList: [{board: 'NTU', type: '台大', title: '[臺大] (o・▽・o) 來發廢文嘛～'},
                 {board: 'NTUcourse', type: '台大', title: '台大課程板 NTUCourse'}],
     boardI: 0,
-    boardFetching: false,
     // data - post
     postList: [
       {
@@ -723,38 +730,54 @@ class App extends Component {
 
   api = new Api()
 
-  // input change
+  // snack bar
+
+  showMsg = (severity, msg) => {
+    this.setState({
+      showSnack: true,
+      snackMsg: {severity, msg},
+    })
+  }
+
+  // login / logout
 
   handleInputChange = (n, v) => {
     this.setState({[n]: v})
   }
 
-  // login / logout
-
   handleLogin = async () => {
+    this.showMsg(Vars.severity.info, 'Logging in...')
     const con = await this.api.login(this.state.user, this.state.pass)
     console.log(con)
     if (con.status) {
+      this.showMsg(Vars.severity.success, `Welcome, ${this.state.user}.`)
       this.setState({
         isLogin: con.status,
       })
+    } else {
+      this.showMsg(Vars.severity.error, con.str)
     }
   }
 
   handleLogout = async () => {
-    const isLogout = await this.api.logout()
-    if (isLogout.status) {
+    const con = await this.api.logout()
+    if (con.status) {
+      this.showMsg(Vars.severity.success, `Goodbye, ${this.state.user}.`)
       this.setState({isLogin: false})
+    } else {
+      this.showMsg(Vars.severity.error, con.str)
     }
   }
 
   // fetch & index change
 
   fetchFav = async () => {
+    this.setState({fetching: true})
     const con = await this.api.getFavBoard()
     if (con.status.status) {
       this.setState({
         boardList: con.data.fav_b,
+        fetching: false,
       })
     }
   }
@@ -764,18 +787,20 @@ class App extends Component {
   }
 
   fetchBoard = async (board) => {
+    this.setState({fetching: true})
     const con = await this.api.getPosts(board)
     if (con.status.status) {
       this.setState({
         postList: con.data.posts,
         postI: 0,
-        boardFetching: false,
+        fetching: false,
+        fetchingMore: false,
       })
     }
   }
 
   handleBoardMore = async () => {
-    await this.setState({boardFetching: true})
+    await this.setState({fetchingMore: true})
     const {boardList, boardI, postList} = this.state
     const endI = postList.length
     const endIdx = postList[endI - 1].index - 1
@@ -788,7 +813,7 @@ class App extends Component {
         postList: postList.concat(newPostList),
       })
       elm.scrollTop = elm.scrollHeight - oldToEnd
-      this.setState({boardFetching: false})
+      this.setState({fetchingMore: false})
     }
   }
 
@@ -797,12 +822,14 @@ class App extends Component {
   }
 
   fetchPost = async (aid) => {
+    this.setState({fetching: true})
     const {boardI, boardList, postList, postI} = this.state
     // const con = await this.api.getPost(boardList[boardI].board, postList[postI].aid)
     const con = await this.api.getPost(boardList[boardI].board, aid)
     if (con.status.status) {
       this.setState({
         post: con.data.post,
+        fetching: false,
       })
     }
   }
@@ -838,6 +865,7 @@ class App extends Component {
     // if logged in before
     const con = await this.api.checkLogin()
     if (con.status) {
+      this.showMsg(Vars.severity.success, `Welcome, ${con.user}.`)
       this.setState({
         isLogin: true,
         user: con.user,
@@ -862,7 +890,7 @@ class App extends Component {
   }
 
   render() {
-    const {postI, boardFetching, boardList, boardI, postList, post} = this.state
+    const {postI, fetchingMore, boardList, boardI, postList, post} = this.state
     const {vars} = this
     return (
       <ThemeProvider theme={this.state.theme === Vars.theme.eink? einkTheme : defaultTheme}>
@@ -886,6 +914,7 @@ class App extends Component {
               <Route path="/bbs">
                 <Bbs
                   theme={this.state.theme}
+                  fetching={this.state.fetching}
                   boardList={boardList}
                   boardI={boardI}
                   fetchFav={this.fetchFav}
@@ -894,7 +923,7 @@ class App extends Component {
                   handleBoardIChange={this.handleBoardIChange}
                   postList={postList}
                   postI={postI}
-                  boardFetching={boardFetching}
+                  fetchingMore={fetchingMore}
                   boardTop={this.state.boardTop}
                   fetchBoard={this.fetchBoard}
                   handleBoardMore={this.handleBoardMore}
@@ -932,15 +961,40 @@ class App extends Component {
             <Fabs
             />
           ) : null}
-            {/*<Snackbar
+          <Snackbar
             anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
             open={this.state.showSnack}
             onClose={() => {this.setState({showSnack: false})}}
-            autoHideDuration={6000}
-            TransitionComponent={(props) => <Slide {...props} direction="up" />}
+            autoHideDuration={3000}
+            TransitionComponent={(props) => (
+              this.state.theme === Vars.theme.eink? (
+                <Fade {...props} />
+              ) : (
+                <Slide {...props} direction="up" />
+              )
+            )}
+            style={{backgroundColor: ''}}
           >
-            <Alert severity="info">AAA</Alert>
-          </Snackbar>*/}
+            <Alert
+              severity={this.state.snackMsg.severity}
+              style={{
+                boxShadow: '0 0 20px grey',
+                ...(this.state.theme === Vars.theme.eink? {
+                  border: '2px solid black',
+                  backgroundColor: 'white',
+                  color: 'black',
+                } : {
+                }),
+              }}
+            >
+              {this.state.snackMsg.title? (
+                <AlertTitle>
+                  {this.state.snackMsg.title}
+                </AlertTitle>
+              ) : null}
+              {this.state.snackMsg.msg}
+            </Alert>
+          </Snackbar>
         </Router>
       </ThemeProvider>
     )
@@ -956,6 +1010,7 @@ const Bbs = (props) => {
           <Favorite
             theme={props.theme}
             fetchFav={props.fetchFav}
+            fetching={props.fetching}
             boardList={props.boardList}
             boardI={props.boardI}
             favTop={props.favTop}
@@ -966,9 +1021,10 @@ const Bbs = (props) => {
         <Route path={`${match.path}/:board`}>
           <BoardPost
             theme={props.theme}
+            fetching={props.fetching}
             postList={props.postList}
             postI={props.postI}
-            boardFetching={props.boardFetching}
+            fetchingMore={props.fetchingMore}
             boardI={props.boardI}
             boardTop={props.boardTop}
             updateTop={props.updateTop}
@@ -993,6 +1049,7 @@ const BoardPost = (props) => {
         <Route path={`${match.path}/:aid`}>
           <Post
             theme={props.theme}
+            fetching={props.fetching}
             post={props.post}
             fetchPost={props.fetchPost}
             postTop={props.postTop}
@@ -1004,7 +1061,8 @@ const BoardPost = (props) => {
             theme={props.theme}
             postList={props.postList}
             postI={props.postI}
-            boardFetching={props.boardFetching}
+            fetching={props.fetching}
+            fetchingMore={props.fetchingMore}
             boardI={props.boardI}
             boardTop={props.boardTop}
             updateTop={props.updateTop}
