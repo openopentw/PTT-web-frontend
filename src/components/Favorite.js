@@ -1,11 +1,13 @@
 import React, {Component} from 'react'
+import {withRouter} from "react-router"
+import {Link} from "react-router-dom"
 
 import {ButtonBase, Card, Container, Divider, Paper, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import Hotkeys from 'react-hot-keys'
 
-import Vars from '../vars/vars.js'
+import Vars from '../vars/Vars.js'
 
 class KeysRight extends Component {
   render() {
@@ -24,17 +26,14 @@ class KeysUpDown extends Component {
 
   changeId = (keyName, e, handle) => {
     const {boardI, boardSize, handleBoardIChange} = this.props
-    let elm = document.getElementById('overlay-initial')
     if (keyName === 'up') {
       if (boardI > 0) {
         handleBoardIChange(boardI - 1)
       }
-      elm.scrollTop = Math.max(0, elm.scrollTop - this.scrollInt)
     } else if (keyName === 'down') {
       if (boardI < boardSize - 1) {
         handleBoardIChange(boardI + 1)
       }
-      elm.scrollTop = Math.min(elm.scrollHeight, elm.scrollTop + this.scrollInt)
     }
   }
 
@@ -50,9 +49,13 @@ class KeysUpDown extends Component {
 }
 
 class Favorite extends Component {
-  componentDidMount = () => {
+  componentDidMount = async () => {
+    const {favTop} = this.props
+    if (!favTop.in) {
+      await this.props.fetchFav()
+    }
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
-    elm.scrollTop = this.props.favTop
+    elm.scrollTop = favTop.top
   }
 
   componentWillUnmount = async () => {
@@ -60,7 +63,8 @@ class Favorite extends Component {
   }
 
   render() {
-    const {theme, boardList, boardI, isView, handleBoardChange, handleBoardIChange} = this.props
+    const {theme, boardList, boardI, handleBoardIChange} = this.props
+    const matchUrl = this.props.match.url
     return (
       <Container maxWidth="sm" style={{marginTop: 30}}>
         {boardList.map((b, i) => (
@@ -77,20 +81,21 @@ class Favorite extends Component {
             }}
           >
             <ButtonBase
-              onClick={handleBoardChange}
+              component={Link}
+              to={`${matchUrl}/${b.board}`}
               onMouseEnter={() => {handleBoardIChange(i)}}
-              style={theme === Vars.theme.eink? {
+              style={{
                 display: 'flex',
                 justifyContent: 'flex-start',
                 textAlign: 'initial',
                 width: '100%',
-                paddingLeft: 32,
-                paddingRight: 32,
-              } : {
-                display: 'flex',
-                justifyContent: 'flex-start',
-                textAlign: 'initial',
-                width: '100%',
+                ...(theme === Vars.theme.eink? {
+                  paddingLeft: 32,
+                  paddingRight: 32,
+                } : {}),
+                ...(b.board === Vars.board.emptyBoard? {
+                  pointerEvents: 'none',
+                } : {}),
               }}
             >
               {theme === Vars.theme.eink? null : (
@@ -117,7 +122,12 @@ class Favorite extends Component {
         ))}
         {theme !== Vars.theme.eink? (
           <React.Fragment>
-            <KeysRight handleBoardChange={handleBoardChange} />
+            <KeysRight handleBoardChange={() => {
+              const board = boardList[boardI].board
+              if (board !== Vars.board.emptyBoard) {
+                this.props.history.push(`${matchUrl}/${board}`)
+              }
+            }} />
             <KeysUpDown
               boardI={boardI}
               boardSize={boardList.length}
@@ -130,4 +140,4 @@ class Favorite extends Component {
   }
 }
 
-export default Favorite
+export default withRouter(Favorite)

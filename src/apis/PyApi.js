@@ -42,7 +42,7 @@ class Api {
     return con
   }
 
-  async getPost(boardName, idx) {
+  async getPost(boardName, aid) {
     const res = await fetch('/api/get_post', {
       method: 'POST',
       credentials: 'same-origin',
@@ -52,11 +52,10 @@ class Api {
       },
       body: JSON.stringify({
         board_name: boardName,
-        idx: idx,
+        aid: aid,
       })
     })
     let con = await res.json()
-
     return con
   }
 

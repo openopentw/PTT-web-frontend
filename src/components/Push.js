@@ -3,11 +3,13 @@ import {ButtonBase, Card, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import ThumbUpIcon from '@material-ui/icons/ThumbUp'
-import ThumbDownIcon from '@material-ui/icons/ThumbDown';
+import ThumbDownIcon from '@material-ui/icons/ThumbDown'
+
+import Vars from '../vars/Vars.js'
 
 class Push extends Component {
   render() {
-    const {p, displayAuthor} = this.props
+    const {p, theme, displayAuthor} = this.props
     return (
       <Card
         style={{
@@ -54,7 +56,7 @@ class Push extends Component {
                 </div>
               </Typography>
             ) : null}
-            <Typography style={{fontSize: 20, color: '#A78430'}}>
+            <Typography style={{fontSize: 20, color: theme === Vars.theme.eink? 'black' : '#A78430'}}>
               {p.content}
             </Typography>
           </div>

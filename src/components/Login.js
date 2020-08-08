@@ -4,21 +4,18 @@ import {Helmet} from "react-helmet"
 
 import {Button, Container, Typography, TextField} from '@material-ui/core'
 
-import Vars from '../vars/vars.js'
+import Vars from '../vars/Vars.js'
 
-const test = () => (
-  <div id="test">
+const TestInfo = (props) => (
+  <div id="test-info">
     <Typography variant="h3" gutterBottom>
-      A: {document.body.clientHeight}
+      A: {navigator.userAgent}
     </Typography>
     <Typography variant="h3" gutterBottom>
-      A: {window.innerHeight}
+      B: {navigator.appCodeName}
     </Typography>
     <Typography variant="h3" gutterBottom>
-      A: {document.documentElement.clientHeight}
-    </Typography>
-    <Typography variant="h3" gutterBottom>
-      A: {document.body.clientHeight}
+      C: {navigator.platform}
     </Typography>
   </div>
 )
@@ -37,12 +34,12 @@ class Login extends Component {
     return (
       <Container maxWidth="xs" style={{marginTop: 50}}>
         <Helmet>
-          <style>{`body { background-color: ${theme === Vars.theme.eink? 'white' : colors.grey[100]}; }`}</style>
+          <style>{`body { background-color: ${theme === Vars.theme.eink? 'white' : colors.grey[300]}; }`}</style>
         </Helmet>
         <Typography variant="h2" gutterBottom>
           Login
         </Typography>
-        {/* <test /> */}
+        {/* <TestInfo /> */}
         <form onSubmit={(e) => {handleLogin(); e.preventDefault()}} >
           <TextField
             label="user ID"

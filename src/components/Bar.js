@@ -1,18 +1,19 @@
 import React, {Component} from 'react'
+import {withRouter} from "react-router"
+import {Link} from "react-router-dom"
 
 import {AppBar, Button, IconButton, Toolbar, Tabs, Tab, Typography} from '@material-ui/core'
 import {Menu, ArrowBack, ExitToApp} from '@material-ui/icons'
 import Hotkeys from 'react-hot-keys'
 
-import Vars from '../vars/vars.js'
+import Vars from '../vars/Vars.js'
 
-class Keys extends Component {
+class KeyGoBack extends Component {
   render() {
-    const {handleBack} = this.props
     return (
       <Hotkeys
         keyName="left"
-        onKeyUp={handleBack}
+        onKeyUp={this.props.goBack}
       />
     )
   }
@@ -20,67 +21,57 @@ class Keys extends Component {
 
 class Bar extends Component {
   render() {
-    const {theme, bar, tab, boardName, post, isView, handleLogout, handleBack, handleTabChange} = this.props
-    // if (theme === Vars.theme.eink) {
-    //   return null
-    // }
+    const {pathname} = this.props.location
+    const pathLevel = pathname.split('/').length
     return (
       <React.Fragment>
       <AppBar
         color="default"
         position="sticky"
         style={{
-          backgroundColor: theme === Vars.theme.eink? 'white' : '',
+          backgroundColor: this.props.theme === Vars.theme.eink? 'white' : '',
         }}
       >
         <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            style={{marginRight: 15}}
-            onClick={() => {
-              if (!(bar === Vars.bar.notLogin || bar === Vars.bar.lobby)) {
-                handleBack()
-              }
-            }}
-          >
-            {(bar === Vars.bar.notLogin || bar === Vars.bar.lobby)? (
-              <Menu />
-            ) : (
+          {pathLevel > 2? (
+            <IconButton
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              style={{marginRight: 15}}
+              onClick={this.props.history.goBack}
+            >
               <ArrowBack />
-            )}
-          </IconButton>
+            </IconButton>
+          ) : null}
           <div style={{flexGrow: 1}}>
-            {(!(bar === Vars.bar.notLogin || bar === Vars.bar.lobby) && isView)? (
-              <Keys handleBack={handleBack} />
+            {pathLevel > 2? (
+              <KeyGoBack goBack={this.props.history.goBack} />
             ) : null}
-            {bar === Vars.bar.notLogin? (
-              <Tabs value={tab} onChange={(e, v) => {handleTabChange(v)}}>
-                <Tab label="Login" />
-                <Tab label="About" />
+            {(!this.props.isLogin)? (
+              <Tabs value={pathname} >
+                <Tab label="Login" value="/login" component={Link} to="/login" />
+                <Tab label="About" value="/about" component={Link} to="/about" />
               </Tabs>
-            ) : bar === Vars.bar.lobby? (
-              <Tabs value={tab} onChange={(e, v) => {handleTabChange(v)}}>
-                <Tab label="Favorite" />
-                <Tab label="About" />
+            ) : pathLevel === 4? (
+              <Typography variant="h5">
+                {this.props.post.title}
+              </Typography>
+            ) : pathLevel === 3? (
+              <Typography variant="h5">
+                {this.props.boardName}
+              </Typography>
+            ) : pathLevel === 2? (
+              <Tabs value={pathname} >
+                <Tab label="Favorite" value="/bbs" component={Link} to="/bbs" />
+                <Tab label="About" value="/about" component={Link} to="/about" />
               </Tabs>
-            ) : bar === Vars.bar.board? (
-              <Typography variant="h5">
-                {boardName}
-              </Typography>
-            ) : bar === Vars.bar.article? (
-              <Typography variant="h5">
-                {post.title}
-              </Typography>
             ) : (
-              <Tabs value={tab} onChange={(e, v) => {handleTabChange(v)}}>
-                <Tab label="NULL" />
-              </Tabs>
+              <div>40444</div>
             )}
           </div>
-          {bar !== Vars.bar.notLogin? (
-            <Button color="inherit" onClick={handleLogout}>
+          {this.props.isLogin? (
+            <Button color="inherit" onClick={this.props.handleLogout}>
               <ExitToApp style={{marginRight: 10}} />
               Logout
             </Button>
@@ -92,4 +83,4 @@ class Bar extends Component {
   }
 }
 
-export default Bar
+export default withRouter(Bar)

@@ -1,19 +1,23 @@
 import React, {Component} from 'react'
 import {colors} from '@material-ui/core'
 import {Helmet} from "react-helmet"
-// import Linkify from 'react-linkify'
 import Linkify from 'linkifyjs/react'
+import {withRouter} from "react-router"
 
 import {Container, Divider, Typography} from '@material-ui/core'
 
-import Vars from '../vars/vars.js'
+import Vars from '../vars/Vars.js'
 import Push from './Push.js'
 
 class Post extends Component {
-  componentDidMount = () => {
+  componentDidMount = async () => {
+    const {aid} = this.props.match.params
+    const {postTop} = this.props
+    if (postTop.in !== aid) {
+      await this.props.fetchPost(aid)
+    }
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
-    const {postTop, postI} = this.props
-    elm.scrollTop = postTop.InI !== postI? 0 : postTop.top
+    elm.scrollTop = postTop.in !== aid? 0 : postTop.top
   }
 
   componentWillUnmount = async () => {
@@ -79,6 +83,7 @@ class Post extends Component {
               type: this.regex.push.type.exec(p)[1],
               content: this.regex.push.content.exec(p)[1],
             }}
+            theme={this.props.theme}
             displayAuthor={(() => {
               const oldAuthor = (' ' + lastAuthor).slice(1)
               lastAuthor = this.regex.push.author.exec(p)[1]
@@ -109,4 +114,4 @@ class Post extends Component {
   }
 }
 
-export default Post
+export default withRouter(Post)

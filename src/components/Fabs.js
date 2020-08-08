@@ -5,7 +5,7 @@ import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward'
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward'
 import Hotkeys from 'react-hot-keys'
 
-import Vars from '../vars/vars.js'
+import Vars from '../vars/Vars.js'
 
 const scrollPage = (direction) => {
   let elm = document.body
@@ -36,6 +36,10 @@ class KeysUpDown extends Component {
 }
 
 class Fabs extends Component {
+  componentDidMount = () => {
+    console.log('[Fab] did mount')
+  }
+
   render() {
     return (
       <div
@@ -45,6 +49,7 @@ class Fabs extends Component {
           right: 8,
         }}
       >
+        {/*
         <div style={{marginBottom: 4}}>
           <Fab
             onClick={() => {scrollPage('up')}}
@@ -72,6 +77,7 @@ class Fabs extends Component {
             <ArrowDownwardIcon />
           </Fab>
         </div>
+        */}
         <KeysUpDown />
       </div>
     )
