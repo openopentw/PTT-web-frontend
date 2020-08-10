@@ -3,6 +3,7 @@ import {withRouter} from "react-router"
 import {Link} from "react-router-dom"
 
 import {AppBar, Button, IconButton, Toolbar, Tabs, Tab, Typography} from '@material-ui/core'
+import {colors} from '@material-ui/core'
 import {Menu, ArrowBack, ExitToApp} from '@material-ui/icons'
 import Hotkeys from 'react-hot-keys'
 
@@ -19,53 +20,74 @@ class KeyGoBack extends Component {
   }
 }
 
+const tabStyle = (focus) => ({
+  // padding: 0,
+  fontSize: 16,
+  ...(focus? {
+    fontWeight: 'bold',
+    // backgroundColor: colors.grey[300],
+  } : {}),
+})
+
 class Bar extends Component {
   render() {
+    const {overlay} = this.props
     const {pathname} = this.props.location
-    const pathLevel = pathname.split('/').length
+    const isEink = this.props.theme === Vars.theme.eink
     return (
-      <React.Fragment>
       <AppBar
         color="default"
         position="sticky"
-        style={{
-          backgroundColor: this.props.theme === Vars.theme.eink? 'white' : '',
-        }}
+        style={{ backgroundColor: isEink? 'white' : '' }}
       >
-        <Toolbar>
-          {pathLevel > 2? (
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              style={{marginRight: 15}}
-              onClick={this.props.history.goBack}
-            >
-              <ArrowBack />
-            </IconButton>
+        <Toolbar variant="dense" style={{
+          // ...(isEink? {
+          // } : {}),
+        }}>
+          {overlay !== Vars.overlay.initial? (
+            <React.Fragment>
+              <IconButton
+                component={Link}
+                to={this.props.backUrl}
+                edge="start"
+                color="inherit"
+                aria-label="back"
+                style={{marginRight: 15}}
+              >
+                <ArrowBack />
+              </IconButton>
+              <KeyGoBack goBack={() => {this.props.history.push(this.props.backUrl)}} />
+            </React.Fragment>
           ) : null}
           <div style={{flexGrow: 1}}>
-            {pathLevel > 2? (
-              <KeyGoBack goBack={this.props.history.goBack} />
-            ) : null}
             {(!this.props.isLogin)? (
               <Tabs value={pathname} >
-                <Tab label="Login" value="/login" component={Link} to="/login" />
-                <Tab label="About" value="/about" component={Link} to="/about" />
+                <Tab label="Login" value="/login" component={Link} to="/login"
+                  style={tabStyle(pathname === '/login')}
+                />
+                <Tab label="About" value="/about" component={Link} to="/about"
+                  style={tabStyle(pathname === '/about')}
+                />
               </Tabs>
-            ) : pathLevel === 4? (
-              <Typography variant="h5">
-                {this.props.post.title}
-              </Typography>
-            ) : pathLevel === 3? (
-              <Typography variant="h5">
+            ) : overlay === Vars.overlay.initial? (
+              <Tabs
+                value={pathname}
+              >
+                <Tab label="Favorite" value="/bbs" component={Link} to="/bbs"
+                  style={tabStyle(pathname === '/bbs')}
+                />
+                <Tab label="About" value="/about" component={Link} to="/about"
+                  style={tabStyle(pathname === '/about')}
+                />
+              </Tabs>
+            ) : overlay === Vars.overlay.board? (
+              <Typography variant="h6">
                 {this.props.boardName}
               </Typography>
-            ) : pathLevel === 2? (
-              <Tabs value={pathname} >
-                <Tab label="Favorite" value="/bbs" component={Link} to="/bbs" />
-                <Tab label="About" value="/about" component={Link} to="/about" />
-              </Tabs>
+            ) : overlay === Vars.overlay.post? (
+              <Typography variant="h6">
+                {this.props.post.title}
+              </Typography>
             ) : (
               <div>40444</div>
             )}
@@ -78,7 +100,6 @@ class Bar extends Component {
           ) : null}
         </Toolbar>
       </AppBar>
-      </React.Fragment>
     )
   }
 }

@@ -1,6 +1,8 @@
 import {colors} from '@material-ui/core'
 
 export default {
+  // primary: colors.grey,
+  secondary: colors.grey,
   text: {
     primary: colors.grey[800],
     secondary: colors.grey[600],

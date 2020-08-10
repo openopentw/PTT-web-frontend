@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {withRouter} from "react-router"
 import {Link} from "react-router-dom"
 
-import {ButtonBase, CircularProgress, Container, Card, Paper, Typography} from '@material-ui/core'
+import {ButtonBase, CircularProgress, Container, Card, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import Hotkeys from 'react-hot-keys'
@@ -47,52 +47,43 @@ class KeysUpDown extends Component {
 }
 
 class Board extends Component {
-  handleScroll = () => {
-    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
-    const {fetchingMore, handleBoardMore} = this.props
-    if (!fetchingMore && elm.scrollTop < 1024) {
-      // console.log(elm.scrollTop)
-      handleBoardMore()
-    }
-  }
-
   componentDidMount = async () => {
-    const {boardTop, boardI, theme, fetchBoard} = this.props
+    const {boardTop} = this.props
     const {board} = this.props.match.params
 
-    let elm = theme === Vars.theme.eink? document.body : document.scrollingElement
+    this.props.updateOverlay(Vars.overlay.board)
+    this.props.updateBack('/bbs')
+    this.props.updateBoard(board)
+    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
     if (boardTop.in !== board) {
-      await fetchBoard(board)
+      await this.props.fetchBoard(board)
     }
     elm.scrollTop = boardTop.in !== board? elm.scrollHeight : boardTop.top
-    window.addEventListener('scroll', this.handleScroll)
   }
 
   componentWillUnmount = () => {
-    window.removeEventListener('scroll', this.handleScroll)
-    this.props.updateTop(Vars.overlay.board)
+    this.props.updateTop()
   }
 
   render() {
     const {theme, postList, postI, handlePostIChange} = this.props
     const matchUrl = this.props.match.url
     return (
-      <div style={{backgroundColor: theme === Vars.theme.eink? 'white' : colors.grey[300]}} >
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          // minHeight: '70vh',
-        }}>
-          <CircularProgress
-            thickness={2}
-            size={64}
-            style={{color: 'black'}}
-          />
-        </div>
+      <Container
+        maxWidth="sm"
+        style={{
+          marginTop: 30,
+          backgroundColor: theme === Vars.theme.eink? 'white' : colors.grey[300],
+        }}
+      >
+          <div style={{textAlign: 'center'}}>
+            <CircularProgress
+              thickness={2}
+              size={64}
+            />
+          </div>
         {this.props.fetching? null : (
-          <Container maxWidth="sm" style={{marginTop: 30}}>
+          <React.Fragment>
             {postList.slice(0).reverse().map((a, i) => (
               <Card
                 key={a.index}
@@ -113,18 +104,15 @@ class Board extends Component {
                       handlePostIChange(postList.length - 1 - i)
                     }
                   }}
-                  style={theme === Vars.theme.eink? {
+                  style={{
                     display: 'flex',
                     justifyContent: 'flex-start',
-                    textAlign: 'initial',
                     width: '100%',
-                    paddingLeft: 32,
-                    paddingRight: 32,
-                  } : {
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    textAlign: 'initial',
-                    width: '100%',
+                    ...(theme === Vars.theme.eink? {
+                      paddingLeft: 32,
+                      paddingRight: 32,
+                      textAlign: 'left',
+                    } : {})
                   }}
                 >
                   {theme === Vars.theme.eink? null : (
@@ -132,14 +120,14 @@ class Board extends Component {
                       <ArrowForwardIcon style={{color: postI === postList.length - 1 - i? 'black' : 'transparent'}}/>
                     </div>
                   )}
-                  <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
-                    <Typography variant="h5">
+                  <div style={{display: 'flex', alignItems: 'center', marginLeft: 10, width: 32}}>
+                    <Typography variant="h6">
                       {a.push_number}
                     </Typography>
                   </div>
                   <div style={{}}>
                     <div style={{paddingTop: 8, paddingBottom: 8}}>
-                      <Typography variant="h5" color="textPrimary">
+                      <Typography variant="h6" color="textPrimary" style={{fontWeight: 'normal'}}>
                         {a.title}
                       </Typography>
                       <Typography variant="subtitle1" color="textSecondary">
@@ -162,9 +150,9 @@ class Board extends Component {
                 />
               </React.Fragment>
             ) : null}
-          </Container>
+          </React.Fragment>
         )}
-      </div>
+      </Container>
     );
   }
 }

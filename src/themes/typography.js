@@ -8,9 +8,10 @@ export default {
     'Noto Sans TC',
     'sans-serif',
   ],
-  h5: {
+  h6: {
+    fontWeight: 'bold',
   },
   subtitle1: {
-    fontSize: 16,
+    // fontSize: 16,
   },
 }

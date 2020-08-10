@@ -12,16 +12,18 @@ import Push from './Push.js'
 class Post extends Component {
   componentDidMount = async () => {
     const {aid} = this.props.match.params
-    const {postTop} = this.props
+    const {postTop, board} = this.props
+    this.props.updateOverlay(Vars.overlay.post)
+    this.props.updateBack(`/bbs/${board}`)
     if (postTop.in !== aid) {
-      await this.props.fetchPost(aid)
+      await this.props.fetchPost(board, aid)
     }
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
     elm.scrollTop = postTop.in !== aid? 0 : postTop.top
   }
 
-  componentWillUnmount = async () => {
-    this.props.updateTop(Vars.overlay.post)
+  componentWillUnmount = () => {
+    this.props.updateTop()
   }
 
   regex = {
@@ -40,14 +42,6 @@ class Post extends Component {
 
   render() {
     const {post} = this.props
-    if (!post.origin_post) {
-      return (
-        <Typography>
-          {/* TODO */}
-          Loading...
-        </Typography>
-      )
-    }
     const origin_post = post.origin_post.split('\n')
     let lastAuthor = ''
     return (
@@ -55,24 +49,17 @@ class Post extends Component {
         <Helmet>
           <style>{`body { background-color: ${colors.grey[100]}; }`}</style>
         </Helmet>
-        {this.props.fetching? (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            // minHeight: '70vh',
-          }}>
+        {(!post.origin_post || this.props.fetching)? (
+          <div style={{textAlign: 'center'}}>
             <CircularProgress
               thickness={2}
               size={64}
-              style={{color: 'black'}}
             />
           </div>
         ) : (
           <React.Fragment>
             <div style={{marginBottom: 30}}>
-              <Typography variant="h5" gutterBottom align="center" style={{fontWeight: 'bold', marginBottom: 10}}>
+              <Typography variant="h6" gutterBottom align="center" style={{marginBottom: 10}}>
                 {post.title}
               </Typography>
               <Typography variant="subtitle1" gutterBottom align="center" style={{color: 'grey'}}>

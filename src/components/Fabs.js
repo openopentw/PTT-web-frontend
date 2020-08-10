@@ -37,7 +37,7 @@ class KeysUpDown extends Component {
 
 class Fabs extends Component {
   componentDidMount = () => {
-    console.log('[Fab] did mount')
+    // console.log('[Fab] did mount')
   }
 
   render() {

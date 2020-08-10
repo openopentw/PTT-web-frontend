@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {Snackbar, Slide, Fade} from '@material-ui/core'
+import {CircularProgress, Snackbar, Slide, Fade} from '@material-ui/core'
 import {Alert, AlertTitle} from '@material-ui/lab'
 import {colors} from '@material-ui/core'
 import {createMuiTheme, ThemeProvider} from '@material-ui/core/styles'
@@ -31,15 +31,13 @@ const defaultTheme = createMuiTheme({
 })
 
 const einkTheme = createMuiTheme({
-  EinkPalette,
+  palette: EinkPalette,
   typography,
 })
 
 class App extends Component {
-  vars = Vars
-
   state = {
-    theme: this.vars.theme.default,
+    theme: Vars.theme.default,
     // snackbar
     showSnack: false,
     snackMsg: {
@@ -47,6 +45,9 @@ class App extends Component {
       msg: '',
       title: '',
     },
+    // overlays
+    overlay: Vars.overlay.initial,
+    backUrl: '',
     // overlay top & first_in
     favTop: {
       top: 0,
@@ -61,6 +62,7 @@ class App extends Component {
       in: -1,
     },
     // process
+    firstFetch: true,
     fetching: false,
     fetchingMore: false,
     // login
@@ -72,6 +74,7 @@ class App extends Component {
     boardList: [{board: 'NTU', type: '台大', title: '[臺大] (o・▽・o) 來發廢文嘛～'},
                 {board: 'NTUcourse', type: '台大', title: '台大課程板 NTUCourse'}],
     boardI: 0,
+    board: 'NTU',
     // data - post
     postList: [
       {
@@ -730,6 +733,20 @@ class App extends Component {
 
   api = new Api()
 
+  // overlays
+
+  updateOverlay = (overlay) => {
+    this.setState({overlay})
+  }
+
+  updateBack = (backUrl) => {
+    this.setState({backUrl})
+  }
+
+  updateBoard = (board) => {
+    this.setState({board})
+  }
+
   // snack bar
 
   showMsg = (severity, msg) => {
@@ -748,7 +765,6 @@ class App extends Component {
   handleLogin = async () => {
     this.showMsg(Vars.severity.info, 'Logging in...')
     const con = await this.api.login(this.state.user, this.state.pass)
-    console.log(con)
     if (con.status) {
       this.showMsg(Vars.severity.success, `Welcome, ${this.state.user}.`)
       this.setState({
@@ -769,7 +785,26 @@ class App extends Component {
     }
   }
 
-  // fetch & index change
+  // index change
+
+  handleBoardIChange = (boardI) => {
+    this.setState({boardI})
+  }
+
+  handlePostIChange = (postI) => {
+    this.setState({postI})
+  }
+
+  handleScroll = () => {
+    if (this.state.overlay === Vars.overlay.board) {
+      let elm = this.state.theme === Vars.theme.eink? document.body : document.scrollingElement
+      if (!this.state.fetching && !this.state.fetchingMore && elm.scrollTop < 1024) {
+        this.fetchBoardMore()
+      }
+    }
+  }
+
+  // fetch
 
   fetchFav = async () => {
     this.setState({fetching: true})
@@ -779,11 +814,9 @@ class App extends Component {
         boardList: con.data.fav_b,
         fetching: false,
       })
+    } else {
+      this.showMsg(Vars.severity.error, con.status.str)
     }
-  }
-
-  handleBoardIChange = (boardI) => {
-    this.setState({boardI})
   }
 
   fetchBoard = async (board) => {
@@ -796,48 +829,49 @@ class App extends Component {
         fetching: false,
         fetchingMore: false,
       })
+    } else {
+      this.showMsg(Vars.severity.error, con.status.str)
     }
   }
 
-  handleBoardMore = async () => {
+  fetchBoardMore = async () => {
     await this.setState({fetchingMore: true})
-    const {boardList, boardI, postList} = this.state
+    const {postList} = this.state
     const endI = postList.length
     const endIdx = postList[endI - 1].index - 1
-    const con = await this.api.getPosts(boardList[boardI].board, endIdx)
+    const con = await this.api.getPosts(this.state.board, endIdx)
     if (con.status.status) {
       let newPostList = con.data.posts
-      let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+      let elm = this.state.theme === Vars.theme.eink? document.body : document.scrollingElement
       const oldToEnd = elm.scrollHeight - elm.scrollTop
       await this.setState({
         postList: postList.concat(newPostList),
       })
       elm.scrollTop = elm.scrollHeight - oldToEnd
       this.setState({fetchingMore: false})
+    } else {
+      this.showMsg(Vars.severity.error, con.status.str)
     }
   }
 
-  handlePostIChange = (postI) => {
-    this.setState({postI})
-  }
-
-  fetchPost = async (aid) => {
+  fetchPost = async (board, aid) => {
     this.setState({fetching: true})
-    const {boardI, boardList, postList, postI} = this.state
-    // const con = await this.api.getPost(boardList[boardI].board, postList[postI].aid)
-    const con = await this.api.getPost(boardList[boardI].board, aid)
+    const con = await this.api.getPost(board, aid)
     if (con.status.status) {
       this.setState({
         post: con.data.post,
         fetching: false,
       })
+    } else {
+      this.showMsg(Vars.severity.error, con.status.str)
     }
   }
 
   // update tops
 
-  updateTop = async (overlay) => {
-    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+  updateTop = async () => {
+    let elm = this.state.theme === Vars.theme.eink? document.body : document.scrollingElement
+    const {overlay} = this.state
     if (overlay === Vars.overlay.initial) {
       await this.setState({favTop: {
         top: elm.scrollTop,
@@ -862,13 +896,18 @@ class App extends Component {
     if (navigator.userAgent.includes('Kobo eReader')) {
       this.setState({theme: Vars.theme.eink})
     }
+    window.onscroll = this.handleScroll
     // if logged in before
     const con = await this.api.checkLogin()
     if (con.status) {
-      this.showMsg(Vars.severity.success, `Welcome, ${con.user}.`)
-      this.setState({
+      await this.setState({
         isLogin: true,
         user: con.user,
+        firstFetch: false,
+      })
+    } else {
+      this.setState({
+        firstFetch: false,
       })
     }
     // prevent disconnect from ptt
@@ -890,112 +929,134 @@ class App extends Component {
   }
 
   render() {
-    const {postI, fetchingMore, boardList, boardI, postList, post} = this.state
-    const {vars} = this
+    const {postI, boardList, boardI, postList} = this.state
     return (
       <ThemeProvider theme={this.state.theme === Vars.theme.eink? einkTheme : defaultTheme}>
-        <Router>
-          <Helmet>
-            <style>
-              {`body {
-                background-color: ${this.state.theme === Vars.theme.eink? 'white': colors.grey[300]};
-              }`}
-            </style>
-          </Helmet>
-          <Bar
-            theme={this.state.theme}
-            isLogin={this.state.isLogin}
-            post={postList[postI]}
-            boardName={boardList[boardI].board}
-            handleLogout={this.handleLogout}
-          />
-          {this.state.isLogin? (
-            <Switch>
-              <Route path="/bbs">
-                <Bbs
-                  theme={this.state.theme}
-                  fetching={this.state.fetching}
-                  boardList={boardList}
-                  boardI={boardI}
-                  fetchFav={this.fetchFav}
-                  favTop={this.state.favTop}
-                  updateTop={this.updateTop}
-                  handleBoardIChange={this.handleBoardIChange}
-                  postList={postList}
-                  postI={postI}
-                  fetchingMore={fetchingMore}
-                  boardTop={this.state.boardTop}
-                  fetchBoard={this.fetchBoard}
-                  handleBoardMore={this.handleBoardMore}
-                  handlePostIChange={this.handlePostIChange}
-                  fetchPost={this.fetchPost}
-                  post={this.state.post}
-                  postTop={this.state.postTop}
-                />
-              </Route>
-              <Route path="/about">
-                <About />
-              </Route>
-              <Route path="/login">
-                <Redirect to="/bbs" />
-              </Route>
-              <Route exact path="/">
-                <Redirect to="/bbs" />
-              </Route>
-            </Switch>
-          ) : (
-            <Switch>
-              <Route path="/login">
-                <Login
-                  theme={this.state.theme}
-                  handleInputChange={this.handleInputChange}
-                  handleLogin={this.handleLogin}
-                />
-              </Route>
-              <Route path="/">
-                <Redirect to="/login" />
-              </Route>
-            </Switch>
-          )}
-          {this.state.theme === Vars.theme.eink? (
-            <Fabs
-            />
-          ) : null}
-          <Snackbar
-            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-            open={this.state.showSnack}
-            onClose={() => {this.setState({showSnack: false})}}
-            autoHideDuration={3000}
-            TransitionComponent={(props) => (
-              this.state.theme === Vars.theme.eink? (
-                <Fade {...props} />
+        {this.state.firstFetch? (
+          <div style={{textAlign: 'center'}}>
+            {/*<CircularProgress
+              thickness={2}
+              size={64}
+            />*/}
+          </div>
+        ) : (
+          <React.Fragment>
+            <Helmet>
+              <style>
+                {`body {
+                  background-color: ${this.state.theme === Vars.theme.eink? 'white': colors.grey[300]};
+                }`}
+              </style>
+            </Helmet>
+            <Router>
+              <Bar
+                theme={this.state.theme}
+                overlay={this.state.overlay}
+                backUrl={this.state.backUrl}
+                isLogin={this.state.isLogin}
+                post={this.state.post}
+                boardName={boardList[boardI].board}
+                handleLogout={this.handleLogout}
+              />
+              {this.state.isLogin? (
+                <Switch>
+                  <Route path="/bbs">
+                    <Bbs
+                      theme={this.state.theme}
+                      updateOverlay={this.updateOverlay}
+                      updateBack={this.updateBack}
+                      showMsg={this.showMsg}
+                      updateBoard={this.updateBoard}
+                      fetching={this.state.fetching}
+                      boardList={boardList}
+                      boardI={boardI}
+                      fetchFav={this.fetchFav}
+                      favTop={this.state.favTop}
+                      updateTop={this.updateTop}
+                      handleBoardIChange={this.handleBoardIChange}
+                      postList={postList}
+                      postI={postI}
+                      fetchingMore={this.state.fetchingMore}
+                      boardTop={this.state.boardTop}
+                      fetchBoard={this.fetchBoard}
+                      fetchBoardMore={this.fetchBoardMore}
+                      handlePostIChange={this.handlePostIChange}
+                      fetchPost={this.fetchPost}
+                      post={this.state.post}
+                      postTop={this.state.postTop}
+                    />
+                  </Route>
+                  <Route path="/about">
+                    <About />
+                  </Route>
+                  <Route path="/login">
+                    <Redirect to="/bbs" />
+                  </Route>
+                  <Route exact path="/">
+                    <Redirect to="/bbs" />
+                  </Route>
+                </Switch>
               ) : (
-                <Slide {...props} direction="up" />
-              )
-            )}
-            style={{backgroundColor: ''}}
-          >
-            <Alert
-              severity={this.state.snackMsg.severity}
-              style={{
-                boxShadow: '0 0 20px grey',
-                ...(this.state.theme === Vars.theme.eink? {
-                  border: '2px solid black',
-                  backgroundColor: 'white',
-                  color: 'black',
-                } : {
-                }),
-              }}
-            >
-              {this.state.snackMsg.title? (
-                <AlertTitle>
-                  {this.state.snackMsg.title}
-                </AlertTitle>
-              ) : null}
-              {this.state.snackMsg.msg}
-            </Alert>
-          </Snackbar>
-        </Router>
+                <Switch>
+                  <Route path="/about">
+                    <About />
+                  </Route>
+                  <Route path="/login">
+                    <Login
+                      theme={this.state.theme}
+                      handleInputChange={this.handleInputChange}
+                      handleLogin={this.handleLogin}
+                    />
+                  </Route>
+                  <Route path="/">
+                    <Redirect to="/login" />
+                  </Route>
+                </Switch>
+              )}
+            </Router>
+            {this.state.theme === Vars.theme.eink? (
+              <Fabs
+                updateTop={this.updateTop}
+              />
+            ) : null}
+            {this.state.showSnack? (
+              <Snackbar
+                anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+                open={this.state.showSnack}
+                onClose={() => {this.setState({showSnack: false})}}
+                autoHideDuration={4000}
+                TransitionComponent={(props) => (
+                  this.state.theme === Vars.theme.eink? (
+                    <Fade {...props} />
+                  ) : (
+                    <Slide {...props} direction="up" />
+                  )
+                )}
+                style={{backgroundColor: ''}}
+              >
+                <Alert
+                  severity={this.state.snackMsg.severity}
+                  style={{
+                    boxShadow: '0 0 20px grey',
+                    ...(this.state.theme === Vars.theme.eink? {
+                      border: '2px solid black',
+                      backgroundColor: 'white',
+                      color: 'black',
+                    } : {
+                    }),
+                  }}
+                >
+                  {this.state.snackMsg.title? (
+                    <AlertTitle>
+                      {this.state.snackMsg.title}
+                    </AlertTitle>
+                  ) : null}
+                  {this.state.snackMsg.msg}
+                </Alert>
+              </Snackbar>
+            ) : null}
+          </React.Fragment>
+        )}
       </ThemeProvider>
     )
   }
@@ -1009,6 +1070,7 @@ const Bbs = (props) => {
         <Route exact path={match.path}>
           <Favorite
             theme={props.theme}
+            updateOverlay={props.updateOverlay}
             fetchFav={props.fetchFav}
             fetching={props.fetching}
             boardList={props.boardList}
@@ -1021,15 +1083,18 @@ const Bbs = (props) => {
         <Route path={`${match.path}/:board`}>
           <BoardPost
             theme={props.theme}
+            updateOverlay={props.updateOverlay}
+            updateBoard={props.updateBoard}
+            showMsg={props.showMsg}
+            updateBack={props.updateBack}
             fetching={props.fetching}
             postList={props.postList}
             postI={props.postI}
             fetchingMore={props.fetchingMore}
-            boardI={props.boardI}
             boardTop={props.boardTop}
             updateTop={props.updateTop}
             fetchBoard={props.fetchBoard}
-            handleBoardMore={props.handleBoardMore}
+            fetchBoardMore={props.fetchBoardMore}
             handlePostIChange={props.handlePostIChange}
             fetchPost={props.fetchPost}
             post={props.post}
@@ -1048,7 +1113,10 @@ const BoardPost = (props) => {
       <Switch>
         <Route path={`${match.path}/:aid`}>
           <Post
+            board={match.params.board}
             theme={props.theme}
+            updateOverlay={props.updateOverlay}
+            updateBack={props.updateBack}
             fetching={props.fetching}
             post={props.post}
             fetchPost={props.fetchPost}
@@ -1059,15 +1127,18 @@ const BoardPost = (props) => {
         <Route exact path={match.path}>
           <Board
             theme={props.theme}
+            updateOverlay={props.updateOverlay}
+            updateBack={props.updateBack}
+            updateBoard={props.updateBoard}
+            showMsg={props.showMsg}
             postList={props.postList}
             postI={props.postI}
             fetching={props.fetching}
             fetchingMore={props.fetchingMore}
-            boardI={props.boardI}
             boardTop={props.boardTop}
             updateTop={props.updateTop}
             fetchBoard={props.fetchBoard}
-            handleBoardMore={props.handleBoardMore}
+            fetchBoardMore={props.fetchBoardMore}
             handlePostIChange={props.handlePostIChange}
           />
         </Route>

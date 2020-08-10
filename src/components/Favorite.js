@@ -2,8 +2,7 @@ import React, {Component} from 'react'
 import {withRouter} from "react-router"
 import {Link} from "react-router-dom"
 
-import {ButtonBase, Card, CircularProgress, Container, Divider, Paper, Typography} from '@material-ui/core'
-import {colors} from '@material-ui/core'
+import {ButtonBase, Card, CircularProgress, Container, Typography} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
 import Hotkeys from 'react-hot-keys'
 
@@ -50,6 +49,7 @@ class KeysUpDown extends Component {
 
 class Favorite extends Component {
   componentDidMount = async () => {
+    this.props.updateOverlay(Vars.overlay.initial)
     const {favTop} = this.props
     if (!favTop.in) {
       await this.props.fetchFav()
@@ -58,8 +58,8 @@ class Favorite extends Component {
     elm.scrollTop = favTop.top
   }
 
-  componentWillUnmount = async () => {
-    this.props.updateTop(Vars.overlay.initial)
+  componentWillUnmount = () => {
+    this.props.updateTop()
   }
 
   render() {
@@ -68,17 +68,10 @@ class Favorite extends Component {
     return (
       <Container maxWidth="sm" style={{marginTop: 30}}>
         {this.props.fetching? (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            // minHeight: '70vh',
-          }}>
+          <div style={{textAlign: 'center'}}>
             <CircularProgress
               thickness={2}
               size={64}
-              style={{color: 'black'}}
             />
           </div>
         ) : (
@@ -103,11 +96,11 @@ class Favorite extends Component {
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-start',
-                    textAlign: 'initial',
                     width: '100%',
                     ...(theme === Vars.theme.eink? {
                       paddingLeft: 32,
                       paddingRight: 32,
+                      textAlign: 'left',
                     } : {}),
                     ...(b.board === Vars.board.emptyBoard? {
                       pointerEvents: 'none',
@@ -124,7 +117,7 @@ class Favorite extends Component {
                   ) : (
                     <div style={{}}>
                       <div style={{paddingTop: 8, paddingBottom: 8}}>
-                        <Typography variant="h5" color="textPrimary">
+                        <Typography variant="h6" color="textPrimary">
                           {b.board}
                         </Typography>
                         <Typography variant="subtitle1" color="textSecondary">
