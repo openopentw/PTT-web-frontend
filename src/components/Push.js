@@ -62,7 +62,7 @@ class Push extends Component {
                 </div>
               </Typography>
             ) : null}
-            <Typography style={{fontSize: 20, color: theme === Vars.theme.eink? 'black' : '#A78430'}}>
+            <Typography variant="body2" style={{color: theme === Vars.theme.eink? 'black' : '#A78430'}}>
               <Linkify>
                 {p.content}
               </Linkify>

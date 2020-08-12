@@ -31,8 +31,6 @@ class Post extends Component {
     }
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
     elm.scrollTop = postTop.in !== aid? 0 : postTop.top
-
-    console.log(this.props.post.processed)
   }
 
   componentWillUnmount = () => {
@@ -75,12 +73,12 @@ class Post extends Component {
               ) : p.type === types.header? (
                 null
               ) : p.type === types.sys? (
-                <Typography key={i} variant="body1" style={{color: 'green'}}>
+                <Typography key={i} variant="body2" style={{color: 'green'}}>
                   {p.p}
                 </Typography>
               ) : p.type === types.del? (
                 <Linkify key={i}>
-                  <Typography variant="body1" style={{color: 'green', marginBottom: 20}}>
+                  <Typography variant="body2" style={{color: 'green', marginBottom: 20}}>
                     {p.p}
                   </Typography>
                 </Linkify>
@@ -89,7 +87,9 @@ class Post extends Component {
                   key={i}
                   p={p.data}
                   theme={this.props.theme}
-                  displayAuthor={true}
+                  displayAuthor={i === 0
+                                 || post.processed.text[i - 1].type !== types.push
+                                 || p.data.author !== post.processed.text[i - 1].data.author}
                   showLightbox={this.showLightbox}
                 />
               ) : (

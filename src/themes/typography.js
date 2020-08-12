@@ -15,6 +15,10 @@ export default {
     fontWeight: 'bold',
   },
   body1: {
+    // fontSize: 20,
+    // lineHeight: '2em',
+  },
+  body2: {
     fontSize: 20,
     lineHeight: '2em',
   },

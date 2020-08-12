@@ -70,12 +70,14 @@ class App extends Component {
     firstFetch: true,
     fetching: false,
     fetchingMore: false,
+    fetchingSearch: false,
     // login
     user: '',
     pass: '',
     isLogin: false,
     prevDis: null,
     // data - board
+    allBoard: [],
     boardList: [{board: 'NTU', type: '台大', title: '[臺大] (o・▽・o) 來發廢文嘛～'},
                 {board: 'NTUcourse', type: '台大', title: '台大課程板 NTUCourse'}],
     boardI: 0,
@@ -816,11 +818,26 @@ class App extends Component {
     const con = await this.api.getFavBoard()
     if (con.status.status) {
       this.setState({
-        boardList: con.data.fav_b,
+        boardList: con.data.b_list,
         fetching: false,
       })
     } else {
       this.showMsg(Vars.severity.error, con.status.str)
+    }
+  }
+
+  fetchAllBoard = async () => {
+    if (!this.state.fetchingSearch && this.state.allBoard) {
+      this.setState({fetchingSearch: true})
+      const con = await this.api.getAllBoard()
+      if (con.status.status) {
+        this.setState({
+          allBoard: con.data.b_list,
+          fetchingSearch: false,
+        })
+      } else {
+        this.showMsg(Vars.severity.error, con.status.str)
+      }
     }
   }
 
@@ -947,12 +964,12 @@ class App extends Component {
     } else if (overlay === Vars.overlay.board) {
       await this.setState({boardTop: {
         top: elm.scrollTop,
-        in: this.state.boardList[this.state.boardI].board,
+        in: this.state.board,
       }})
     } else { // post
       await this.setState({postTop: {
         top: elm.scrollTop,
-        in: this.state.postList[this.state.postI].aid,
+        in: this.state.post.aid,
       }})
     }
   }
@@ -999,12 +1016,7 @@ class App extends Component {
     return (
       <ThemeProvider theme={this.state.theme === Vars.theme.eink? einkTheme : defaultTheme}>
         {this.state.firstFetch? (
-          <div style={{textAlign: 'center'}}>
-            {/*<CircularProgress
-              thickness={2}
-              size={64}
-            />*/}
-          </div>
+          <div></div>
         ) : (
           <React.Fragment>
             <Helmet>
@@ -1016,14 +1028,17 @@ class App extends Component {
             </Helmet>
             <Router>
               <Bar
-                theme={this.state.theme}
-                fetching={this.state.fetching}
-                overlay={this.state.overlay}
+                allBoard={this.state.allBoard}
                 back={this.state.back}
-                isLogin={this.state.isLogin}
-                post={this.state.post}
                 board={this.state.board}
+                fetchAllBoard={this.fetchAllBoard}
+                fetching={this.state.fetching}
+                fetchingSearch={this.state.fetchingSearch}
                 handleLogout={this.handleLogout}
+                isLogin={this.state.isLogin}
+                overlay={this.state.overlay}
+                post={this.state.post}
+                theme={this.state.theme}
               />
               {this.state.isLogin? (
                 <Switch>

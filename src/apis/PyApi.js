@@ -42,6 +42,12 @@ class Api {
     return con
   }
 
+  async getAllBoard() {
+    const res = await fetch('/api/get_board_list')
+    const con = await res.json()
+    return con
+  }
+
   async getPost(boardName, aid) {
     const res = await fetch('/api/get_post', {
       method: 'POST',
