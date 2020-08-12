@@ -5,6 +5,7 @@ import {colors} from '@material-ui/core'
 import {createMuiTheme, ThemeProvider} from '@material-ui/core/styles'
 import {Helmet} from "react-helmet"
 import {BrowserRouter as Router, Switch, Route, Redirect, useRouteMatch} from "react-router-dom"
+import 'react-image-lightbox/style.css'
 
 import palette from './themes/palette.js'
 import EinkPalette from './themes/eink_palette.js'
@@ -47,7 +48,10 @@ class App extends Component {
     },
     // overlays
     overlay: Vars.overlay.initial,
-    backUrl: '',
+    back: {
+      title: '',
+      url: '',
+    },
     // overlay top & first_in
     favTop: {
       top: 0,
@@ -739,8 +743,8 @@ class App extends Component {
     this.setState({overlay})
   }
 
-  updateBack = (backUrl) => {
-    this.setState({backUrl})
+  updateBack = (back) => {
+    this.setState({back})
   }
 
   updateBoard = (board) => {
@@ -763,10 +767,10 @@ class App extends Component {
   }
 
   handleLogin = async () => {
-    this.showMsg(Vars.severity.info, 'Logging in...')
+    this.showMsg(Vars.severity.info, '登入中…')
     const con = await this.api.login(this.state.user, this.state.pass)
     if (con.status) {
-      this.showMsg(Vars.severity.success, `Welcome, ${this.state.user}.`)
+      this.showMsg(Vars.severity.success, `歡迎，${this.state.user}.`)
       this.setState({
         isLogin: con.status,
       })
@@ -778,7 +782,7 @@ class App extends Component {
   handleLogout = async () => {
     const con = await this.api.logout()
     if (con.status) {
-      this.showMsg(Vars.severity.success, `Goodbye, ${this.state.user}.`)
+      this.showMsg(Vars.severity.success, `再見，${this.state.user}.`)
       this.setState({isLogin: false})
     } else {
       this.showMsg(Vars.severity.error, con.str)
@@ -820,7 +824,7 @@ class App extends Component {
   }
 
   fetchBoard = async (board) => {
-    this.setState({fetching: true})
+    this.setState({fetching: true, fetchingMore: true})
     const con = await this.api.getPosts(board)
     if (con.status.status) {
       this.setState({
@@ -929,7 +933,6 @@ class App extends Component {
   }
 
   render() {
-    const {postI, boardList, boardI, postList} = this.state
     return (
       <ThemeProvider theme={this.state.theme === Vars.theme.eink? einkTheme : defaultTheme}>
         {this.state.firstFetch? (
@@ -951,43 +954,46 @@ class App extends Component {
             <Router>
               <Bar
                 theme={this.state.theme}
+                fetching={this.state.fetching}
                 overlay={this.state.overlay}
-                backUrl={this.state.backUrl}
+                back={this.state.back}
                 isLogin={this.state.isLogin}
                 post={this.state.post}
-                boardName={boardList[boardI].board}
+                board={this.state.board}
                 handleLogout={this.handleLogout}
               />
               {this.state.isLogin? (
                 <Switch>
                   <Route path="/bbs">
                     <Bbs
-                      theme={this.state.theme}
-                      updateOverlay={this.updateOverlay}
-                      updateBack={this.updateBack}
-                      showMsg={this.showMsg}
-                      updateBoard={this.updateBoard}
-                      fetching={this.state.fetching}
-                      boardList={boardList}
-                      boardI={boardI}
-                      fetchFav={this.fetchFav}
-                      favTop={this.state.favTop}
-                      updateTop={this.updateTop}
-                      handleBoardIChange={this.handleBoardIChange}
-                      postList={postList}
-                      postI={postI}
-                      fetchingMore={this.state.fetchingMore}
+                      boardI={this.state.boardI}
+                      boardList={this.state.boardList}
                       boardTop={this.state.boardTop}
+                      favTop={this.state.favTop}
                       fetchBoard={this.fetchBoard}
                       fetchBoardMore={this.fetchBoardMore}
-                      handlePostIChange={this.handlePostIChange}
+                      fetchFav={this.fetchFav}
                       fetchPost={this.fetchPost}
+                      fetching={this.state.fetching}
+                      fetchingMore={this.state.fetchingMore}
+                      handleBoardIChange={this.handleBoardIChange}
+                      handlePostIChange={this.handlePostIChange}
                       post={this.state.post}
+                      postI={this.state.postI}
+                      postList={this.state.postList}
                       postTop={this.state.postTop}
+                      showMsg={this.showMsg}
+                      theme={this.state.theme}
+                      updateBack={this.updateBack}
+                      updateBoard={this.updateBoard}
+                      updateOverlay={this.updateOverlay}
+                      updateTop={this.updateTop}
                     />
                   </Route>
                   <Route path="/about">
-                    <About />
+                    <About
+                      updateOverlay={this.updateOverlay}
+                    />
                   </Route>
                   <Route path="/login">
                     <Redirect to="/bbs" />
@@ -999,12 +1005,15 @@ class App extends Component {
               ) : (
                 <Switch>
                   <Route path="/about">
-                    <About />
+                    <About
+                      updateOverlay={this.updateOverlay}
+                    />
                   </Route>
                   <Route path="/login">
                     <Login
                       theme={this.state.theme}
                       handleInputChange={this.handleInputChange}
+                      updateOverlay={this.updateOverlay}
                       handleLogin={this.handleLogin}
                     />
                   </Route>
@@ -1037,12 +1046,13 @@ class App extends Component {
                 <Alert
                   severity={this.state.snackMsg.severity}
                   style={{
-                    boxShadow: '0 0 20px grey',
                     ...(this.state.theme === Vars.theme.eink? {
                       border: '2px solid black',
                       backgroundColor: 'white',
                       color: 'black',
+                      boxShadow: '',
                     } : {
+                      boxShadow: '0 0 20px grey',
                     }),
                   }}
                 >
@@ -1069,36 +1079,36 @@ const Bbs = (props) => {
       <Switch>
         <Route exact path={match.path}>
           <Favorite
-            theme={props.theme}
-            updateOverlay={props.updateOverlay}
+            boardI={props.boardI}
+            boardList={props.boardList}
+            favTop={props.favTop}
             fetchFav={props.fetchFav}
             fetching={props.fetching}
-            boardList={props.boardList}
-            boardI={props.boardI}
-            favTop={props.favTop}
-            updateTop={props.updateTop}
             handleBoardIChange={props.handleBoardIChange}
+            theme={props.theme}
+            updateOverlay={props.updateOverlay}
+            updateTop={props.updateTop}
           />
         </Route>
         <Route path={`${match.path}/:board`}>
           <BoardPost
-            theme={props.theme}
-            updateOverlay={props.updateOverlay}
-            updateBoard={props.updateBoard}
-            showMsg={props.showMsg}
-            updateBack={props.updateBack}
-            fetching={props.fetching}
-            postList={props.postList}
-            postI={props.postI}
-            fetchingMore={props.fetchingMore}
             boardTop={props.boardTop}
-            updateTop={props.updateTop}
             fetchBoard={props.fetchBoard}
             fetchBoardMore={props.fetchBoardMore}
-            handlePostIChange={props.handlePostIChange}
             fetchPost={props.fetchPost}
+            fetching={props.fetching}
+            fetchingMore={props.fetchingMore}
+            handlePostIChange={props.handlePostIChange}
             post={props.post}
+            postI={props.postI}
+            postList={props.postList}
             postTop={props.postTop}
+            showMsg={props.showMsg}
+            theme={props.theme}
+            updateBack={props.updateBack}
+            updateBoard={props.updateBoard}
+            updateOverlay={props.updateOverlay}
+            updateTop={props.updateTop}
           />
         </Route>
       </Switch>

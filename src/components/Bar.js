@@ -4,7 +4,7 @@ import {Link} from "react-router-dom"
 
 import {AppBar, Button, IconButton, Toolbar, Tabs, Tab, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
-import {Menu, ArrowBack, ExitToApp} from '@material-ui/icons'
+import {ArrowBack, ExitToApp} from '@material-ui/icons'
 import Hotkeys from 'react-hot-keys'
 
 import Vars from '../vars/Vars.js'
@@ -33,69 +33,83 @@ class Bar extends Component {
   render() {
     const {overlay} = this.props
     const {pathname} = this.props.location
-    const isEink = this.props.theme === Vars.theme.eink
     return (
       <AppBar
         color="default"
         position="sticky"
-        style={{ backgroundColor: isEink? 'white' : '' }}
+        style={{ backgroundColor: this.props.theme === Vars.theme.eink? 'white' : '' }}
       >
-        <Toolbar variant="dense" style={{
-          // ...(isEink? {
-          // } : {}),
-        }}>
+        <Toolbar variant="dense" style={{display: 'flex', alignItems: 'center'}}>
           {overlay !== Vars.overlay.initial? (
             <React.Fragment>
-              <IconButton
-                component={Link}
-                to={this.props.backUrl}
+              <Button
+                {...this.props.theme === Vars.theme.eink? {
+                  onClick: () => {this.props.history.push(this.props.back.url)}
+                } : {
+                  component: Link,
+                  to: this.props.back.url,
+                }}
                 edge="start"
                 color="inherit"
                 aria-label="back"
-                style={{marginRight: 15}}
+                style={{
+                  color: colors.grey[700],
+                  fontSize: 16,
+                  marginRight: 16,
+                  textTransform: 'none',
+                }}
               >
-                <ArrowBack />
-              </IconButton>
-              <KeyGoBack goBack={() => {this.props.history.push(this.props.backUrl)}} />
+                <ArrowBack style={{marginRight: 4}}/>
+                {this.props.back.title}
+              </Button>
+              <KeyGoBack goBack={() => {this.props.history.push(this.props.back.url)}} />
             </React.Fragment>
           ) : null}
           <div style={{flexGrow: 1}}>
-            {(!this.props.isLogin)? (
-              <Tabs value={pathname} >
-                <Tab label="Login" value="/login" component={Link} to="/login"
-                  style={tabStyle(pathname === '/login')}
-                />
-                <Tab label="About" value="/about" component={Link} to="/about"
-                  style={tabStyle(pathname === '/about')}
-                />
-              </Tabs>
-            ) : overlay === Vars.overlay.initial? (
-              <Tabs
-                value={pathname}
-              >
-                <Tab label="Favorite" value="/bbs" component={Link} to="/bbs"
-                  style={tabStyle(pathname === '/bbs')}
-                />
-                <Tab label="About" value="/about" component={Link} to="/about"
-                  style={tabStyle(pathname === '/about')}
-                />
-              </Tabs>
-            ) : overlay === Vars.overlay.board? (
-              <Typography variant="h6">
-                {this.props.boardName}
-              </Typography>
-            ) : overlay === Vars.overlay.post? (
-              <Typography variant="h6">
-                {this.props.post.title}
-              </Typography>
-            ) : (
-              <div>40444</div>
+            {this.props.fetching? null : (
+              <React.Fragment>
+                {(!this.props.isLogin)? (
+                  <Tabs value={pathname} >
+                    <Tab label="登入" value="/login" component={Link} to="/login"
+                      style={tabStyle(pathname === '/login')}
+                    />
+                    <Tab label="關於本站" value="/about" component={Link} to="/about"
+                      style={tabStyle(pathname === '/about')}
+                    />
+                  </Tabs>
+                ) : overlay === Vars.overlay.initial? (
+                  <Tabs value={pathname} >
+                    <Tab label="我的最愛" value="/bbs" component={Link} to="/bbs"
+                      style={tabStyle(pathname === '/bbs')}
+                    />
+                    <Tab label="關於本站" value="/about" component={Link} to="/about"
+                      style={tabStyle(pathname === '/about')}
+                    />
+                  </Tabs>
+                ) : overlay === Vars.overlay.board? (
+                  <Typography variant="h6">
+                    {this.props.board}
+                  </Typography>
+                ) : overlay === Vars.overlay.post? (
+                  <Typography variant="h6">
+                    {this.props.post.title}
+                  </Typography>
+                ) : (
+                  <Typography variant="h6">
+                    Error here
+                  </Typography>
+                )}
+              </React.Fragment>
             )}
           </div>
           {this.props.isLogin? (
-            <Button color="inherit" onClick={this.props.handleLogout}>
-              <ExitToApp style={{marginRight: 10}} />
-              Logout
+            <Button color="inherit" onClick={this.props.handleLogout} style={{
+              color: colors.grey[700],
+              fontSize: 16,
+              marginLeft: 16,
+            }}>
+              <ExitToApp style={{marginRight: 4}} />
+              登出
             </Button>
           ) : null}
         </Toolbar>

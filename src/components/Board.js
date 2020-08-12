@@ -52,7 +52,7 @@ class Board extends Component {
     const {board} = this.props.match.params
 
     this.props.updateOverlay(Vars.overlay.board)
-    this.props.updateBack('/bbs')
+    this.props.updateBack({title: '我的最愛', url: '/bbs'})
     this.props.updateBoard(board)
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
     if (boardTop.in !== board) {
@@ -86,7 +86,7 @@ class Board extends Component {
           <React.Fragment>
             {postList.slice(0).reverse().map((a, i) => (
               <Card
-                key={a.index}
+                key={postList.length - i}
                 style={{
                   // margin: 15,
                   display: 'flex',
@@ -97,8 +97,12 @@ class Board extends Component {
                 }}
               >
                 <ButtonBase
-                  component={Link}
-                  to={`${matchUrl}/${a.aid}`}
+                  {...theme === Vars.theme.eink? {
+                    onClick: () => {this.props.history.push(`${matchUrl}/${a.aid}`)}
+                  } : {
+                    component: Link,
+                    to: `${matchUrl}/${a.aid}`,
+                  }}
                   onMouseEnter={() => {
                     if (postI !== postList.length - 1 - i) {
                       handlePostIChange(postList.length - 1 - i)
@@ -107,11 +111,11 @@ class Board extends Component {
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-start',
+                    textAlign: 'initial',
                     width: '100%',
                     ...(theme === Vars.theme.eink? {
                       paddingLeft: 32,
                       paddingRight: 32,
-                      textAlign: 'left',
                     } : {})
                   }}
                 >

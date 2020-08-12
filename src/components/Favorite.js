@@ -90,17 +90,21 @@ class Favorite extends Component {
                 }}
               >
                 <ButtonBase
-                  component={Link}
-                  to={`${matchUrl}/${b.board}`}
+                  {...theme === Vars.theme.eink? {
+                    onClick: () => {this.props.history.push(`${matchUrl}/${b.board}`)}
+                  } : {
+                    component: Link,
+                    to: `${matchUrl}/${b.board}`,
+                  }}
                   onMouseEnter={() => {handleBoardIChange(i)}}
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-start',
+                    textAlign: 'initial',
                     width: '100%',
                     ...(theme === Vars.theme.eink? {
                       paddingLeft: 32,
                       paddingRight: 32,
-                      textAlign: 'left',
                     } : {}),
                     ...(b.board === Vars.board.emptyBoard? {
                       pointerEvents: 'none',

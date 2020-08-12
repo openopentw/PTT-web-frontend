@@ -8,8 +8,15 @@ export default {
     'Noto Sans TC',
     'sans-serif',
   ],
+  h5: {
+    fontWeight: 'bold',
+  },
   h6: {
     fontWeight: 'bold',
+  },
+  body1: {
+    fontSize: 20,
+    lineHeight: '2em',
   },
   subtitle1: {
     // fontSize: 16,

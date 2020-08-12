@@ -21,6 +21,10 @@ const TestInfo = (props) => (
 )
 
 class Login extends Component {
+  componentDidMount = () => {
+    this.props.updateOverlay(Vars.overlay.initial)
+  }
+
   handleFormChange = (e) => {
     const {handleInputChange} = this.props
     const t = e.target
@@ -37,12 +41,12 @@ class Login extends Component {
           <style>{`body { background-color: ${theme === Vars.theme.eink? 'white' : colors.grey[300]}; }`}</style>
         </Helmet>
         <Typography variant="h2" gutterBottom>
-          Login
+          登入
         </Typography>
         {/* <TestInfo /> */}
         <form onSubmit={(e) => {handleLogin(); e.preventDefault()}} >
           <TextField
-            label="user ID"
+            label="帳號"
             name="user"
             fullWidth
             style={{margin: 5}}
@@ -50,7 +54,7 @@ class Login extends Component {
             autoFocus
           />
           <TextField
-            label="password"
+            label="密碼"
             name="pass"
             type="password"
             fullWidth
@@ -58,8 +62,14 @@ class Login extends Component {
             onChange={this.handleFormChange}
           />
           <div style={{margin: 40, textAlign: 'center'}}>
-            <Button type="submit" variant="contained" color="primary" >
-              Login
+            <Button type="submit" variant="contained" color="primary" style={{
+              ...(theme === Vars.theme.eink? {
+                backgroundColor: 'white',
+                border: '2px solid black',
+                color: 'black',
+              } : {}),
+            }}>
+              登入
             </Button>
           </div>
         </form>
