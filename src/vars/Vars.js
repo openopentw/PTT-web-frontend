@@ -17,4 +17,32 @@ export default {
     warning: "warning",
     error: "error",
   },
+  postTextType: {
+    empty: 0,
+    header: 1,
+    del: 2,
+    sys: 3,
+    push: 4,
+    reply: 5,
+    para: 6,
+  },
+  reg: {
+    img: {
+      img: /(https?:\/\/.*\.(?:png|jpeg|gif|jpg))/gi,
+      imgur: /(https?:\/\/.?\.?imgur\.com\/.......)(?!\.(png|jpeg|gif|jpg))/gi,
+    },
+    text: {
+      isDel: /^※ 文章網址: .*$/,
+      isSys: /^※ .*$/,
+      isPush: /^. \w+\s*: .*\d\d\/\d\d \d\d:\d\d$/,
+      // eg.: '推 cook321     : 喜歡就買被，手機也沒多少錢                        07/09 22:34'
+      push: { // extract data from push:
+        type: /^(.) (\w+)\s*: .*\d\d\/\d\d \d\d:\d\d$/,
+        author: /^. (\w+)\s*: .*\d\d\/\d\d \d\d:\d\d$/,
+        time: /^. \w+\s*: .*(\d\d\/\d\d \d\d:\d\d$)/,
+        content: /^. \w+\s*: (.*)\d\d\/\d\d \d\d:\d\d$/,
+      },
+      isReply: /^: .*$/,
+    },
+  },
 }

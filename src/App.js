@@ -14,6 +14,7 @@ import typography from './themes/typography.js'
 // apis
 import Api from './apis/PyApi.js'
 import Vars from './vars/Vars.js'
+import matchAll from './util/matchAll.js'
 
 // components
 import About from './components/About.js'
@@ -858,12 +859,74 @@ class App extends Component {
     }
   }
 
+  findImg = (p) => {
+    const reg = Vars.reg.img
+    return [
+      ...[...matchAll(reg.img, p)].map(url => url[0]),
+      ...[...matchAll(reg.imgur, p)].map(url => `${url[0]}.jpg`),
+    ]
+  }
+
+  processPost = (post) => {
+    if (!post) {
+      return {}
+    } else {
+      // classify text and find imgs
+      const types = Vars.postTextType
+      const reg = Vars.reg
+      let text = []
+      let imgArr = []
+
+      let ps = post.split('\n')
+      for (let i in ps) {
+        const p = ps[i]
+        if (!p) {
+          text.push({p: p, type: types.empty})
+        } else if ((i < 4 && p[1] === '作' && p[2] === '者') // is header
+                   || (i < 4 && p[1] === '標' && p[2] === '題')
+                   || (i < 4 && p[1] === '時' && p[2] === '間')
+                   || (i < 4 && p[1] === '─' && p[2] === '─')) {
+          text.push({p: p, type: types.header})
+        } else if (reg.text.isSys.test(p)) {
+          text.push({
+            p: p,
+            type: reg.text.isDel.test(p)? types.del: types.sys
+          })
+        } else if (reg.text.isPush.test(p)) {
+          const content = reg.text.push.content.exec(p)[1]
+          const img = this.findImg(content)
+          text.push({p: p, type: types.push, data:{
+            author: reg.text.push.author.exec(p)[1],
+            time: reg.text.push.time.exec(p)[1],
+            type: reg.text.push.type.exec(p)[1],
+            content: content,
+            img: {idx: imgArr.length, img},
+          }})
+          imgArr = [...imgArr, ...img]
+        } else {
+          const img = this.findImg(p)
+          text.push({
+            p: p,
+            type: reg.text.isReply.test(p)? types.reply : types.para,
+            img: {idx: imgArr.length, img},
+          })
+          imgArr = [...imgArr, ...img]
+        }
+      }
+
+      return {text, img: imgArr}
+    }
+  }
+
   fetchPost = async (board, aid) => {
     this.setState({fetching: true})
     const con = await this.api.getPost(board, aid)
     if (con.status.status) {
       this.setState({
-        post: con.data.post,
+        post: {
+          ...con.data.post,
+          processed: this.processPost(con.data.post.origin_post)
+        },
         fetching: false,
       })
     } else {

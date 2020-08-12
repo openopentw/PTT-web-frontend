@@ -6,7 +6,6 @@ import ThumbUpIcon from '@material-ui/icons/ThumbUp'
 import ThumbDownIcon from '@material-ui/icons/ThumbDown'
 import Linkify from 'linkifyjs/react'
 
-import matchAll from '../util/matchAll.js'
 import Vars from '../vars/Vars.js'
 
 const imgReg = /(https?:\/\/.*\.(?:png|jpeg|gif|jpg))/gi
@@ -17,12 +16,6 @@ const vh = document.documentElement.clientHeight
 class Push extends Component {
   render() {
     const {p, theme, displayAuthor} = this.props
-    const matches = [
-      // ...[...p.content.matchAll(imgReg)].map(url => url[0]),
-      // ...[...p.content.matchAll(imgurReg)].map(url => `${url[0]}.jpg`),
-      ...[...matchAll(imgReg, p.content)].map(url => url[0]),
-      ...[...matchAll(imgurReg, p.content)].map(url => `${url[0]}.jpg`),
-    ]
     return (
       <Card
         style={{
@@ -76,16 +69,23 @@ class Push extends Component {
             </Typography>
           </div>
         </div>
-        {matches.map((url, i) => (
+        {p.img.img.map((url, i) => (
           <div key={i} style={{
             textAlign: 'center',
             marginTop: 16,
             marginBottom: 16,
           }}>
-            <img src={url} alt="" style={{
-              maxWidth: '90%',
-              maxHeight: this.props.theme === Vars.theme.eink? 0.7 * vh : '70vh',
-            }} />
+            <ButtonBase
+              style={{
+                maxWidth: '100%',
+              }}
+              onClick={() => {this.props.showLightbox(p.img.idx + i)}}
+            >
+              <img src={url} alt="" style={{
+                maxWidth: '100%',
+                maxHeight: this.props.theme === Vars.theme.eink? 0.7 * vh : '70vh',
+              }} />
+            </ButtonBase>
           </div>
         ))}
       </Card>
