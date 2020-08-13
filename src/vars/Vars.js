@@ -29,7 +29,7 @@ export default {
   reg: {
     img: {
       img: /(https?:\/\/.*\.(?:png|jpeg|gif|jpg))/gi,
-      imgur: /(https?:\/\/.?\.?imgur\.com\/.......)(?!\.(png|jpeg|gif|jpg))/gi,
+      imgur: /(https?:\/\/.?\.?imgur\.com\/\w{7})(?!\.(png|jpeg|gif|jpg))/gi,
     },
     text: {
       isDel: /^※ 文章網址: .*$/,
@@ -40,7 +40,9 @@ export default {
         type: /^(.) (\w+)\s*: .*\d\d\/\d\d \d\d:\d\d$/,
         author: /^. (\w+)\s*: .*\d\d\/\d\d \d\d:\d\d$/,
         time: /^. \w+\s*: .*(\d\d\/\d\d \d\d:\d\d$)/,
+        ip: /^. \w+\s*: .* (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}) \d\d\/\d\d \d\d:\d\d$/,
         content: /^. \w+\s*: (.*)\d\d\/\d\d \d\d:\d\d$/,
+        contentWoIp: /^. \w+\s*: (.*) \d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} \d\d\/\d\d \d\d:\d\d$/,
       },
       isReply: /^: .*$/,
     },

@@ -66,7 +66,7 @@ class Favorite extends Component {
     const {theme, boardList, boardI, handleBoardIChange} = this.props
     const matchUrl = this.props.match.url
     return (
-      <Container maxWidth="sm" style={{marginTop: 30}}>
+      <Container maxWidth="sm" style={{marginTop: 30, marginBottom: 30}}>
         {this.props.fetching? (
           <div style={{textAlign: 'center'}}>
             <CircularProgress

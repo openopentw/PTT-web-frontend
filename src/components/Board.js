@@ -82,7 +82,7 @@ class Board extends Component {
               size={64}
             />
           </div>
-        {this.props.fetching? null : (
+        {!this.props.fetching && (
           <React.Fragment>
             {postList.slice(0).reverse().map((a, i) => (
               <Card
@@ -97,7 +97,7 @@ class Board extends Component {
                 }}
               >
                 <ButtonBase
-                  {...theme === Vars.theme.eink? {
+                  {...!a.aid? {} : theme === Vars.theme.eink? {
                     onClick: () => {this.props.history.push(`${matchUrl}/${a.aid}`)}
                   } : {
                     component: Link,

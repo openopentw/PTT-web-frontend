@@ -22,6 +22,7 @@ import Bar from './components/Bar.js'
 import Board from './components/Board.js'
 import Fabs from './components/Fabs.js'
 import Favorite from './components/Favorite.js'
+import Search from './components/Search.js'
 import Login from './components/Login.js'
 import Post from './components/Post.js'
 
@@ -76,6 +77,8 @@ class App extends Component {
     pass: '',
     isLogin: false,
     prevDis: null,
+    // search
+    searchValue: '',
     // data - board
     allBoard: [],
     boardList: [{board: 'NTU', type: '台大', title: '[臺大] (o・▽・o) 來發廢文嘛～'},
@@ -811,6 +814,11 @@ class App extends Component {
     }
   }
 
+  onSearchChange = (searchValue) => {
+    this.setState({searchValue})
+    console.log(searchValue)
+  }
+
   // fetch
 
   fetchFav = async () => {
@@ -827,17 +835,15 @@ class App extends Component {
   }
 
   fetchAllBoard = async () => {
-    if (!this.state.fetchingSearch && this.state.allBoard) {
-      this.setState({fetchingSearch: true})
-      const con = await this.api.getAllBoard()
-      if (con.status.status) {
-        this.setState({
-          allBoard: con.data.b_list,
-          fetchingSearch: false,
-        })
-      } else {
-        this.showMsg(Vars.severity.error, con.status.str)
-      }
+    this.setState({fetchingSearch: true})
+    const con = await this.api.getAllBoard()
+    if (con.status.status) {
+      this.setState({
+        allBoard: con.data.b_list,
+        fetchingSearch: false,
+      })
+    } else {
+      this.showMsg(Vars.severity.error, con.status.str)
     }
   }
 
@@ -910,12 +916,20 @@ class App extends Component {
             type: reg.text.isDel.test(p)? types.del: types.sys
           })
         } else if (reg.text.isPush.test(p)) {
-          const content = reg.text.push.content.exec(p)[1]
+          let ip = reg.text.push.ip.exec(p)
+          let content = ''
+          if (ip) {
+            ip = ip[1]
+            content = reg.text.push.contentWoIp.exec(p)[1]
+          } else {
+            content = reg.text.push.content.exec(p)[1]
+          }
           const img = this.findImg(content)
           text.push({p: p, type: types.push, data:{
             author: reg.text.push.author.exec(p)[1],
             time: reg.text.push.time.exec(p)[1],
             type: reg.text.push.type.exec(p)[1],
+            ip: ip,
             content: content,
             img: {idx: imgArr.length, img},
           }})
@@ -1031,9 +1045,9 @@ class App extends Component {
                 allBoard={this.state.allBoard}
                 back={this.state.back}
                 board={this.state.board}
-                fetchAllBoard={this.fetchAllBoard}
                 fetching={this.state.fetching}
-                fetchingSearch={this.state.fetchingSearch}
+                searchValue={this.state.searchValue}
+                onSearchChange={this.onSearchChange}
                 handleLogout={this.handleLogout}
                 isLogin={this.state.isLogin}
                 overlay={this.state.overlay}
@@ -1071,6 +1085,15 @@ class App extends Component {
                   <Route path="/about">
                     <About
                       updateOverlay={this.updateOverlay}
+                    />
+                  </Route>
+                  <Route path="/search">
+                    <Search
+                      theme={this.state.theme}
+                      allBoard={this.state.allBoard}
+                      fetchAllBoard={this.fetchAllBoard}
+                      fetchingSearch={this.state.fetchingSearch}
+                      searchValue={this.state.searchValue}
                     />
                   </Route>
                   <Route path="/login">

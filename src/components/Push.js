@@ -60,9 +60,17 @@ class Push extends Component {
                 <div>
                   {p.time}
                 </div>
+                {p.ip && (
+                  <div style={{marginLeft: 8}}>
+                    {p.ip}
+                  </div>
+                )}
               </Typography>
             ) : null}
-            <Typography variant="body2" style={{color: theme === Vars.theme.eink? 'black' : '#A78430'}}>
+            <Typography variant="body2" style={{
+              color: theme === Vars.theme.eink? 'black' : '#A78430',
+              flexGrow: 1,
+            }}>
               <Linkify>
                 {p.content}
               </Linkify>
