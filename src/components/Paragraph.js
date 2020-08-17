@@ -16,7 +16,7 @@ class Paragraph extends Component {
     const {para} = this.props
     return (
       <React.Fragment>
-        <Typography variant="body2" style={this.props.style}>
+        <Typography variant="body1" style={this.props.style}>
           <Linkify>
             {para}
           </Linkify>

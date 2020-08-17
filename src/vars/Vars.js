@@ -47,4 +47,10 @@ export default {
       isReply: /^: .*$/,
     },
   },
+  style: {
+    post: {
+      fontSize: 20,
+      lineHeight: '2em',
+    },
+  },
 }

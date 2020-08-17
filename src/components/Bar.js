@@ -3,7 +3,7 @@ import {withRouter} from "react-router"
 import {Link} from "react-router-dom"
 import {AppBar, Button, CircularProgress, IconButton, Toolbar, Tabs, Tab, TextField, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
-import {ArrowBack, Clear, Directions, ExitToApp} from '@material-ui/icons'
+import {ArrowBack, Clear, Directions, ExitToApp, FindInPage, PostAdd} from '@material-ui/icons'
 import Hotkeys from 'react-hot-keys'
 
 import Vars from '../vars/Vars.js'
@@ -39,31 +39,32 @@ class Bar extends Component {
         style={{ backgroundColor: this.props.theme === Vars.theme.eink? 'white' : '' }}
       >
         <Toolbar variant="dense" style={{display: 'flex', alignItems: 'center'}}>
-          {overlay !== Vars.overlay.initial? (
-            <React.Fragment>
-              <Button
-                {...this.props.theme === Vars.theme.eink? {
-                  onClick: () => {this.props.history.push(this.props.back.url)}
-                } : {
-                  component: Link,
-                  to: this.props.back.url,
-                }}
-                edge="start"
-                color="inherit"
-                aria-label="back"
-                style={{
-                  color: colors.grey[700],
-                  fontSize: 16,
-                  marginRight: 16,
-                  textTransform: 'none',
-                }}
-              >
-                <ArrowBack style={{marginRight: 4}}/>
-                {this.props.back.title}
-              </Button>
-              <KeyGoBack goBack={() => {this.props.history.push(this.props.back.url)}} />
-            </React.Fragment>
-          ) : null}
+          <div style={{marginRight: 16}}>
+            {overlay !== Vars.overlay.initial? (
+              <React.Fragment>
+                <Button
+                  {...this.props.theme === Vars.theme.eink? {
+                    onClick: () => {this.props.history.push(this.props.back.url)}
+                  } : {
+                    component: Link,
+                    to: this.props.back.url,
+                  }}
+                  edge="start"
+                  color="inherit"
+                  aria-label="back"
+                  style={{
+                    color: colors.grey[700],
+                    fontSize: 16,
+                    textTransform: 'none',
+                  }}
+                >
+                  <ArrowBack style={{marginRight: 4}}/>
+                  {this.props.back.title}
+                </Button>
+                <KeyGoBack goBack={() => {this.props.history.push(this.props.back.url)}} />
+              </React.Fragment>
+            ) : null}
+          </div>
           <div>
             {this.props.fetching? null : (
               <React.Fragment>
@@ -77,40 +78,16 @@ class Bar extends Component {
                     />
                   </Tabs>
                 ) : overlay === Vars.overlay.initial? (
-                  <Tabs value={pathname} >
-                    <Tab label="我的最愛" value="/bbs" component={Link} to="/bbs"
-                      style={tabStyle(pathname === '/bbs')}
-                    />
-                    <Tab label="關於本站" value="/about" component={Link} to="/about"
-                      style={tabStyle(pathname === '/about')}
-                    />
-                    <form
-                      onSubmit={(e) => {e.preventDefault()}}
-                      style={{display: 'flex', alignItems: 'center'}}
-                    >
-                      <TextField
-                        label="搜尋看板"
-                        variant="outlined"
-                        size="small"
-                        value={this.props.searchValue}
-                        onChange={(e) => {this.props.onSearchChange(e.target.value)}}
-                        onFocus={() => {this.props.history.push('/search')}}
-                        onBlur={() => {
-                          if (!this.props.searchValue) {
-                            this.props.history.push('/bbs')
-                          }
-                        }}
-                        InputProps={{endAdornment: this.props.searchValue && (
-                          <IconButton size="small" onClick={() => {
-                            this.props.onSearchChange('')
-                            this.props.history.push('/bbs')
-                          }}>
-                            <Clear />
-                          </IconButton>
-                        )}}
+                  <div style={{display: 'flex'}}>
+                    <Tabs value={pathname} >
+                      <Tab label="我的最愛" value="/bbs" component={Link} to="/bbs"
+                        style={tabStyle(pathname === '/bbs')}
                       />
-                    </form>
-                  </Tabs>
+                      <Tab label="關於本站" value="/about" component={Link} to="/about"
+                        style={tabStyle(pathname === '/about')}
+                      />
+                    </Tabs>
+                  </div>
                 ) : overlay === Vars.overlay.board? (
                   <Typography variant="h6">
                     {this.props.board}
@@ -127,20 +104,61 @@ class Bar extends Component {
               </React.Fragment>
             )}
           </div>
-          <div style={{flexGrow: 1}}>
+          <div style={{flexGrow: 1}}></div>
+          <div style={{display: 'flex'}}>
+            {overlay === Vars.overlay.initial && (
+              <form
+                onSubmit={(e) => {e.preventDefault()}}
+                style={{display: 'flex', alignItems: 'center'}}
+              >
+                <TextField
+                  label="搜尋看板"
+                  variant="outlined"
+                  size="small"
+                  value={this.props.searchValue}
+                  onChange={(e) => {this.props.onSearchChange(e.target.value)}}
+                  onFocus={() => {this.props.history.push('/search')}}
+                  onBlur={() => {
+                    if (!this.props.searchValue) {
+                      this.props.history.push('/bbs')
+                    }
+                  }}
+                  InputProps={{endAdornment: this.props.searchValue && (
+                    <IconButton size="small" onClick={() => {
+                      this.props.onSearchChange('')
+                      this.props.history.push('/bbs')
+                    }}>
+                      <Clear />
+                    </IconButton>
+                  )}}
+                />
+              </form>
+            )}
+            {overlay === Vars.overlay.board && (
+              <React.Fragment>
+                <Button color="inherit" style={{
+                  color: colors.grey[700],
+                  fontSize: 16,
+                  marginLeft: 16,
+                }}>
+                  <PostAdd style={{marginRight: 4}} />
+                  發文
+                </Button>
+              </React.Fragment>
+            )}
+            {this.props.isLogin && (
+              <React.Fragment>
+                <Button color="inherit" onClick={this.props.handleLogout} style={{
+                  color: colors.grey[700],
+                  fontSize: 16,
+                  marginLeft: 16,
+                }}>
+                  <ExitToApp style={{marginRight: 4}} />
+                  登出
+                </Button>
+              </React.Fragment>
+            )}
           </div>
-          {this.props.isLogin? (
-            <React.Fragment>
-              <Button color="inherit" onClick={this.props.handleLogout} style={{
-                color: colors.grey[700],
-                fontSize: 16,
-                marginLeft: 16,
-              }}>
-                <ExitToApp style={{marginRight: 4}} />
-                登出
-              </Button>
-            </React.Fragment>
-          ) : null}
         </Toolbar>
       </AppBar>
     )

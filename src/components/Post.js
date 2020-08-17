@@ -1,15 +1,20 @@
 import React, {Component} from 'react'
+import {Button, CircularProgress, Container, Divider, TextField, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
 import Linkify from 'linkifyjs/react'
 import {Helmet} from "react-helmet"
 import {withRouter} from "react-router"
 import Lightbox from 'react-image-lightbox'
 
-import {CircularProgress, Container, Divider, Typography} from '@material-ui/core'
-
 import Vars from '../vars/Vars.js'
 import Paragraph from './Paragraph.js'
 import Push from './Push.js'
+import Reply from './Reply.js'
+
+const style = {
+  fontSize: 18,
+  lineHeight: '2em',
+}
 
 class Post extends Component {
   state = {
@@ -33,12 +38,24 @@ class Post extends Component {
     elm.scrollTop = postTop.in !== aid? 0 : postTop.top
   }
 
+  fetchPost = async (rememberTop=false) => {
+    const {board} = this.props
+    const {aid} = this.props.match.params
+    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+    let oldTop = elm.scrollTop
+    await this.props.fetchPost(board, aid)
+    if (rememberTop) {
+      elm.scrollTop = oldTop
+    }
+  }
+
   componentWillUnmount = () => {
     this.props.updateTop()
   }
 
   render() {
-    const {post} = this.props
+    const {post, board} = this.props
+    const {aid} = this.props.match.params
     const types = Vars.postTextType
     let lastAuthor = ''
     return (
@@ -73,20 +90,34 @@ class Post extends Component {
               ) : p.type === types.header? (
                 null
               ) : p.type === types.sys? (
-                <Typography key={i} variant="body2" style={{color: 'green'}}>
+                <Typography key={i} variant="body1" style={{color: 'green', ...Vars.style.post}}>
                   {p.p}
                 </Typography>
               ) : p.type === types.del? (
-                <Linkify key={i}>
-                  <Typography variant="body2" style={{color: 'green', marginBottom: 20}}>
-                    {p.p}
-                  </Typography>
-                </Linkify>
+                <div>
+                  <Linkify key={i}>
+                    <Typography variant="body1" style={{color: 'green', ...Vars.style.post}}>
+                      {p.p}
+                    </Typography>
+                  </Linkify>
+                  <Reply
+                    fetchPost={this.fetchPost}
+                    addPush={(type, content) => {
+                      this.props.addPush(
+                        this.props.board,
+                        this.props.match.params.aid,
+                        type,
+                        content
+                      )
+                    }}
+                  />
+                </div>
               ) : p.type === types.push? (
                 <Push
                   key={i}
                   p={p.data}
                   theme={this.props.theme}
+                  style={Vars.style.post}
                   displayAuthor={i === 0
                                  || post.processed.text[i - 1].type !== types.push
                                  || p.data.author !== post.processed.text[i - 1].data.author}
@@ -96,12 +127,26 @@ class Post extends Component {
                 <Paragraph
                   key={i}
                   theme={this.props.theme}
-                  style={p.type === types.reply? {color: '#80A29C'} : {}}
+                  style={{
+                    ...p.type === types.reply? {color: '#80A29C'} : {},
+                    ...Vars.style.post,
+                  }}
                   para={p.p}
                   img={p.img}
                   showLightbox={this.showLightbox}
                 />
               ))}
+                {/*<Reply
+                fetchPost={this.fetchPost}
+                addPush={(type, content) => {
+                  this.props.addPush(
+                    this.props.board,
+                    this.props.match.params.aid,
+                    type,
+                    content
+                  )
+                }}
+              />*/}
             </React.Fragment>
             {this.state.lightboxIsShow && (
               <Lightbox

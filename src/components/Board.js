@@ -157,7 +157,7 @@ class Board extends Component {
           </React.Fragment>
         )}
       </Container>
-    );
+    )
   }
 }
 

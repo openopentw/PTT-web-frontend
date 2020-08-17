@@ -7,6 +7,7 @@ import {Helmet} from "react-helmet"
 import {BrowserRouter as Router, Switch, Route, Redirect, useRouteMatch} from "react-router-dom"
 import 'react-image-lightbox/style.css'
 
+// thems
 import palette from './themes/palette.js'
 import EinkPalette from './themes/eink_palette.js'
 import typography from './themes/typography.js'
@@ -25,6 +26,7 @@ import Favorite from './components/Favorite.js'
 import Search from './components/Search.js'
 import Login from './components/Login.js'
 import Post from './components/Post.js'
+import NewPost from './components/NewPost.js'
 
 import './App.css'
 
@@ -901,6 +903,7 @@ class App extends Component {
       let imgArr = []
 
       let ps = post.split('\n')
+      let findDel = false
       for (let i in ps) {
         const p = ps[i]
         if (!p) {
@@ -911,10 +914,18 @@ class App extends Component {
                    || (i < 4 && p[1] === '─' && p[2] === '─')) {
           text.push({p: p, type: types.header})
         } else if (reg.text.isSys.test(p)) {
-          text.push({
-            p: p,
-            type: reg.text.isDel.test(p)? types.del: types.sys
-          })
+          if (!findDel && reg.text.isDel.test(p)) {
+            findDel = true
+            text.push({
+              p: p,
+              type: types.del
+            })
+          } else {
+            text.push({
+              p: p,
+              type: types.sys
+            })
+          }
         } else if (reg.text.isPush.test(p)) {
           let ip = reg.text.push.ip.exec(p)
           let content = ''
@@ -1058,6 +1069,7 @@ class App extends Component {
                 <Switch>
                   <Route path="/bbs">
                     <Bbs
+                      addPush={this.api.push}
                       boardI={this.state.boardI}
                       boardList={this.state.boardList}
                       boardTop={this.state.boardTop}
@@ -1194,6 +1206,7 @@ const Bbs = (props) => {
         <Route path={`${match.path}/:board`}>
           <BoardPost
             boardTop={props.boardTop}
+            addPush={props.addPush}
             fetchBoard={props.fetchBoard}
             fetchBoardMore={props.fetchBoardMore}
             fetchPost={props.fetchPost}
@@ -1222,9 +1235,14 @@ const BoardPost = (props) => {
   return (
     <div>
       <Switch>
+        <Route path={`${match.path}/NewPost`}>
+          <NewPost
+          />
+        </Route>
         <Route path={`${match.path}/:aid`}>
           <Post
             board={match.params.board}
+            addPush={props.addPush}
             theme={props.theme}
             updateOverlay={props.updateOverlay}
             updateBack={props.updateBack}
