@@ -105,8 +105,8 @@ class Api {
     return con
   }
 
-  async push(board, aid, type, content) {
-    const res = await fetch('/api/push', {
+  async addPush(board, aid, type, content) {
+    const res = await fetch('/api/add_push', {
       method: 'POST',
       credentials: 'same-origin',
       headers: {
@@ -114,6 +114,20 @@ class Api {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({board, type, content, aid})
+    })
+    const con = await res.json()
+    return con
+  }
+
+  async addPost(board, category, title, content) {
+    const res = await fetch('/api/add_post', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({board, category, title, content})
     })
     const con = await res.json()
     return con

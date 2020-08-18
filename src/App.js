@@ -991,11 +991,18 @@ class App extends Component {
         top: elm.scrollTop,
         in: this.state.board,
       }})
-    } else { // post
+    } else if (overlay === Vars.overlay.post) {
       await this.setState({postTop: {
         top: elm.scrollTop,
         in: this.state.post.aid,
       }})
+    } else if (overlay === Vars.overlay.addPost) {
+      await this.setState({boardTop: {
+        top: -1,
+        in: 'force board update',
+      }})
+    } else {
+      console.log('No this overlay!!')
     }
   }
 
@@ -1069,7 +1076,8 @@ class App extends Component {
                 <Switch>
                   <Route path="/bbs">
                     <Bbs
-                      addPush={this.api.push}
+                      addPost={this.api.addPost}
+                      addPush={this.api.addPush}
                       boardI={this.state.boardI}
                       boardList={this.state.boardList}
                       boardTop={this.state.boardTop}
@@ -1206,6 +1214,7 @@ const Bbs = (props) => {
         <Route path={`${match.path}/:board`}>
           <BoardPost
             boardTop={props.boardTop}
+            addPost={props.addPost}
             addPush={props.addPush}
             fetchBoard={props.fetchBoard}
             fetchBoardMore={props.fetchBoardMore}
@@ -1237,38 +1246,44 @@ const BoardPost = (props) => {
       <Switch>
         <Route path={`${match.path}/NewPost`}>
           <NewPost
+            addPost={props.addPost}
+            board={match.params.board}
+            theme={props.theme}
+            updateBack={props.updateBack}
+            updateOverlay={props.updateOverlay}
+            updateTop={props.updateTop}
           />
         </Route>
         <Route path={`${match.path}/:aid`}>
           <Post
-            board={match.params.board}
             addPush={props.addPush}
-            theme={props.theme}
-            updateOverlay={props.updateOverlay}
-            updateBack={props.updateBack}
+            board={match.params.board}
+            fetchPost={props.fetchPost}
             fetching={props.fetching}
             post={props.post}
-            fetchPost={props.fetchPost}
             postTop={props.postTop}
+            theme={props.theme}
+            updateBack={props.updateBack}
+            updateOverlay={props.updateOverlay}
             updateTop={props.updateTop}
           />
         </Route>
         <Route exact path={match.path}>
           <Board
-            theme={props.theme}
-            updateOverlay={props.updateOverlay}
-            updateBack={props.updateBack}
-            updateBoard={props.updateBoard}
-            showMsg={props.showMsg}
-            postList={props.postList}
-            postI={props.postI}
-            fetching={props.fetching}
-            fetchingMore={props.fetchingMore}
             boardTop={props.boardTop}
-            updateTop={props.updateTop}
             fetchBoard={props.fetchBoard}
             fetchBoardMore={props.fetchBoardMore}
+            fetching={props.fetching}
+            fetchingMore={props.fetchingMore}
             handlePostIChange={props.handlePostIChange}
+            postI={props.postI}
+            postList={props.postList}
+            showMsg={props.showMsg}
+            theme={props.theme}
+            updateBack={props.updateBack}
+            updateBoard={props.updateBoard}
+            updateOverlay={props.updateOverlay}
+            updateTop={props.updateTop}
           />
         </Route>
       </Switch>

@@ -47,6 +47,7 @@ class Login extends Component {
         <form onSubmit={(e) => {handleLogin(); e.preventDefault()}} >
           <TextField
             label="帳號"
+            variant="outlined"
             name="user"
             fullWidth
             style={{margin: 5}}
@@ -55,6 +56,7 @@ class Login extends Component {
           />
           <TextField
             label="密碼"
+            variant="outlined"
             name="pass"
             type="password"
             fullWidth
@@ -62,19 +64,13 @@ class Login extends Component {
             onChange={this.handleFormChange}
           />
           <div style={{margin: 40, textAlign: 'center'}}>
-            <Button type="submit" variant="contained" color="primary" style={{
-              ...(theme === Vars.theme.eink? {
-                backgroundColor: 'white',
-                border: '2px solid black',
-                color: 'black',
-              } : {}),
-            }}>
+            <Button type="submit" variant="outlined" style={{fontSize: 20}}>
               登入
             </Button>
           </div>
         </form>
       </Container>
-    );
+    )
   }
 }
 

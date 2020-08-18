@@ -96,6 +96,10 @@ class Bar extends Component {
                   <Typography variant="h6">
                     {this.props.post.title}
                   </Typography>
+                ) : overlay === Vars.overlay.addPost? (
+                  <Typography variant="h6">
+                    發表文章
+                  </Typography>
                 ) : (
                   <Typography variant="h6">
                     Error here
@@ -136,11 +140,20 @@ class Bar extends Component {
             )}
             {overlay === Vars.overlay.board && (
               <React.Fragment>
-                <Button color="inherit" style={{
-                  color: colors.grey[700],
-                  fontSize: 16,
-                  marginLeft: 16,
-                }}>
+                <Button
+                  {...this.props.theme === Vars.theme.eink? {
+                    onClick: () => {this.props.history.push(`${pathname}/NewPost`)}
+                  } : {
+                    component: Link,
+                    to: `${pathname}/NewPost`,
+                  }}
+                  color="inherit"
+                  style={{
+                    color: colors.grey[700],
+                    fontSize: 16,
+                    marginLeft: 16,
+                  }}
+                >
                   <PostAdd style={{marginRight: 4}} />
                   發文
                 </Button>

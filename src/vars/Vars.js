@@ -7,6 +7,7 @@ export default {
     initial: 0,
     board: 1,
     post: 2,
+    addPost: 3,
   },
   board: {
     emptyBoard: '----------',

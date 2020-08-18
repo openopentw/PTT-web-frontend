@@ -11,7 +11,7 @@ class Reply extends Component {
   }
 
   addPush = async (type) => {
-    this.props.addPush(type, this.state.pushValue)
+    await this.props.addPush(type, this.state.pushValue)
     this.setState({pushValue: ''})
     await this.props.fetchPost(true)
   }
