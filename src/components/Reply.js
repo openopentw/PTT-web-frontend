@@ -26,7 +26,7 @@ class Reply extends Component {
       }}>
         <form
           onSubmit={(e) => {e.preventDefault()}}
-          style={{flexGrow: 1, display: 'flex', alignItems: 'center'}}
+          style={{flex: 1, display: 'flex', alignItems: 'center'}}
         >
           <TextField
             multiline

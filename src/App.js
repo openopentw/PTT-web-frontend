@@ -60,10 +60,12 @@ class App extends Component {
     favTop: {
       top: 0,
       in: false,
+      boardI: 0,
     },
     boardTop: {
       top: 0,
       in: -1,
+      postI: 0,
     },
     postTop: {
       top: 0,
@@ -85,7 +87,6 @@ class App extends Component {
     allBoard: [],
     boardList: [{board: 'NTU', type: '台大', title: '[臺大] (o・▽・o) 來發廢文嘛～'},
                 {board: 'NTUcourse', type: '台大', title: '台大課程板 NTUCourse'}],
-    boardI: 0,
     board: 'NTU',
     // data - post
     postList: [
@@ -416,7 +417,6 @@ class App extends Component {
       {aid: 1, push_number: 21, date: '7/07', author: 'YJC', title:'嗨 測試一下1'},
       {aid: 2, push_number: 13, date: '7/07', author: 'YJC', title:'嗨 測試一下2'}
     ],
-    postI: 0,
     post: {
       "aid": "1V1mX5Kr",
       "author": "Barefoot24 (アドル)",
@@ -799,14 +799,6 @@ class App extends Component {
 
   // index change
 
-  handleBoardIChange = (boardI) => {
-    this.setState({boardI})
-  }
-
-  handlePostIChange = (postI) => {
-    this.setState({postI})
-  }
-
   handleScroll = () => {
     if (this.state.overlay === Vars.overlay.board) {
       let elm = this.state.theme === Vars.theme.eink? document.body : document.scrollingElement
@@ -855,7 +847,6 @@ class App extends Component {
     if (con.status.status) {
       this.setState({
         postList: con.data.posts,
-        postI: 0,
         fetching: false,
         fetchingMore: false,
       })
@@ -978,18 +969,20 @@ class App extends Component {
 
   // update tops
 
-  updateTop = async () => {
+  updateTop = async (idx=0) => {
     let elm = this.state.theme === Vars.theme.eink? document.body : document.scrollingElement
     const {overlay} = this.state
     if (overlay === Vars.overlay.initial) {
       await this.setState({favTop: {
         top: elm.scrollTop,
         in: true,
+        boardI: idx,
       }})
     } else if (overlay === Vars.overlay.board) {
       await this.setState({boardTop: {
         top: elm.scrollTop,
         in: this.state.board,
+        postI: idx,
       }})
     } else if (overlay === Vars.overlay.post) {
       await this.setState({postTop: {
@@ -1078,7 +1071,6 @@ class App extends Component {
                     <Bbs
                       addPost={this.api.addPost}
                       addPush={this.api.addPush}
-                      boardI={this.state.boardI}
                       boardList={this.state.boardList}
                       boardTop={this.state.boardTop}
                       favTop={this.state.favTop}
@@ -1088,10 +1080,7 @@ class App extends Component {
                       fetchPost={this.fetchPost}
                       fetching={this.state.fetching}
                       fetchingMore={this.state.fetchingMore}
-                      handleBoardIChange={this.handleBoardIChange}
-                      handlePostIChange={this.handlePostIChange}
                       post={this.state.post}
-                      postI={this.state.postI}
                       postList={this.state.postList}
                       postTop={this.state.postTop}
                       showMsg={this.showMsg}
@@ -1200,12 +1189,10 @@ const Bbs = (props) => {
       <Switch>
         <Route exact path={match.path}>
           <Favorite
-            boardI={props.boardI}
             boardList={props.boardList}
             favTop={props.favTop}
             fetchFav={props.fetchFav}
             fetching={props.fetching}
-            handleBoardIChange={props.handleBoardIChange}
             theme={props.theme}
             updateOverlay={props.updateOverlay}
             updateTop={props.updateTop}
@@ -1221,9 +1208,7 @@ const Bbs = (props) => {
             fetchPost={props.fetchPost}
             fetching={props.fetching}
             fetchingMore={props.fetchingMore}
-            handlePostIChange={props.handlePostIChange}
             post={props.post}
-            postI={props.postI}
             postList={props.postList}
             postTop={props.postTop}
             showMsg={props.showMsg}
@@ -1275,8 +1260,6 @@ const BoardPost = (props) => {
             fetchBoardMore={props.fetchBoardMore}
             fetching={props.fetching}
             fetchingMore={props.fetchingMore}
-            handlePostIChange={props.handlePostIChange}
-            postI={props.postI}
             postList={props.postList}
             showMsg={props.showMsg}
             theme={props.theme}

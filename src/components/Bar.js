@@ -38,9 +38,9 @@ class Bar extends Component {
         position="sticky"
         style={{ backgroundColor: this.props.theme === Vars.theme.eink? 'white' : '' }}
       >
-        <Toolbar variant="dense" style={{display: 'flex', alignItems: 'center'}}>
+        <Toolbar variant="dense">
           <div style={{marginRight: 16}}>
-            {overlay !== Vars.overlay.initial? (
+            {overlay !== Vars.overlay.initial && (
               <React.Fragment>
                 <Button
                   {...this.props.theme === Vars.theme.eink? {
@@ -63,115 +63,111 @@ class Bar extends Component {
                 </Button>
                 <KeyGoBack goBack={() => {this.props.history.push(this.props.back.url)}} />
               </React.Fragment>
-            ) : null}
+            )}
           </div>
-          <div>
-            {this.props.fetching? null : (
-              <React.Fragment>
-                {(!this.props.isLogin)? (
+          {this.props.fetching? null : (
+            <React.Fragment>
+              {(!this.props.isLogin)? (
+                <Tabs value={pathname} >
+                  <Tab label="登入" value="/login" component={Link} to="/login"
+                    style={tabStyle(pathname === '/login')}
+                  />
+                  <Tab label="關於本站" value="/about" component={Link} to="/about"
+                    style={tabStyle(pathname === '/about')}
+                  />
+                </Tabs>
+              ) : overlay === Vars.overlay.initial? (
+                <div style={{display: 'flex'}}>
                   <Tabs value={pathname} >
-                    <Tab label="登入" value="/login" component={Link} to="/login"
-                      style={tabStyle(pathname === '/login')}
+                    <Tab label="我的最愛" value="/bbs" component={Link} to="/bbs"
+                      style={tabStyle(pathname === '/bbs')}
                     />
                     <Tab label="關於本站" value="/about" component={Link} to="/about"
                       style={tabStyle(pathname === '/about')}
                     />
                   </Tabs>
-                ) : overlay === Vars.overlay.initial? (
-                  <div style={{display: 'flex'}}>
-                    <Tabs value={pathname} >
-                      <Tab label="我的最愛" value="/bbs" component={Link} to="/bbs"
-                        style={tabStyle(pathname === '/bbs')}
-                      />
-                      <Tab label="關於本站" value="/about" component={Link} to="/about"
-                        style={tabStyle(pathname === '/about')}
-                      />
-                    </Tabs>
-                  </div>
-                ) : overlay === Vars.overlay.board? (
-                  <Typography variant="h6">
-                    {this.props.board}
-                  </Typography>
-                ) : overlay === Vars.overlay.post? (
-                  <Typography variant="h6">
-                    {this.props.post.title}
-                  </Typography>
-                ) : overlay === Vars.overlay.addPost? (
-                  <Typography variant="h6">
-                    發表文章
-                  </Typography>
-                ) : (
-                  <Typography variant="h6">
-                    Error here
-                  </Typography>
-                )}
-              </React.Fragment>
-            )}
-          </div>
-          <div style={{flexGrow: 1}}></div>
-          <div style={{display: 'flex'}}>
-            {overlay === Vars.overlay.initial && (
-              <form
-                onSubmit={(e) => {e.preventDefault()}}
-                style={{display: 'flex', alignItems: 'center'}}
-              >
-                <TextField
-                  label="搜尋看板"
-                  variant="outlined"
-                  size="small"
-                  value={this.props.searchValue}
-                  onChange={(e) => {this.props.onSearchChange(e.target.value)}}
-                  onFocus={() => {this.props.history.push('/search')}}
-                  onBlur={() => {
-                    if (!this.props.searchValue) {
-                      this.props.history.push('/bbs')
-                    }
-                  }}
-                  InputProps={{endAdornment: this.props.searchValue && (
-                    <IconButton size="small" onClick={() => {
-                      this.props.onSearchChange('')
-                      this.props.history.push('/bbs')
-                    }}>
-                      <Clear />
-                    </IconButton>
-                  )}}
-                />
-              </form>
-            )}
-            {overlay === Vars.overlay.board && (
-              <React.Fragment>
-                <Button
-                  {...this.props.theme === Vars.theme.eink? {
-                    onClick: () => {this.props.history.push(`${pathname}/NewPost`)}
-                  } : {
-                    component: Link,
-                    to: `${pathname}/NewPost`,
-                  }}
-                  color="inherit"
-                  style={{
-                    color: colors.grey[700],
-                    fontSize: 16,
-                    marginLeft: 16,
-                  }}
-                >
-                  <PostAdd style={{marginRight: 4}} />
-                  發文
-                </Button>
-              </React.Fragment>
-            )}
-            {this.props.isLogin && (
-              <React.Fragment>
-                <Button color="inherit" onClick={this.props.handleLogout} style={{
+                </div>
+              ) : overlay === Vars.overlay.board? (
+                <Typography variant="h6">
+                  {this.props.board}
+                </Typography>
+              ) : overlay === Vars.overlay.post? (
+                <Typography variant="h6" style={{overflow: 'hidden', whiteSpace: 'nowrap'}}>
+                  {this.props.post.title}
+                </Typography>
+              ) : overlay === Vars.overlay.addPost? (
+                <Typography variant="h6">
+                  發表文章
+                </Typography>
+              ) : (
+                <Typography variant="h6">
+                  Error here
+                </Typography>
+              )}
+            </React.Fragment>
+          )}
+          <div style={{flex: 1}}></div>
+          {this.props.theme !== Vars.theme.eink && this.props.isLogin && overlay === Vars.overlay.initial && (
+            <form
+              onSubmit={(e) => {e.preventDefault()}}
+              style={{display: 'flex', alignItems: 'center'}}
+            >
+              <TextField
+                label="搜尋看板"
+                variant="outlined"
+                size="small"
+                value={this.props.searchValue}
+                onChange={(e) => {this.props.onSearchChange(e.target.value)}}
+                onFocus={() => {this.props.history.push('/search')}}
+                onBlur={() => {
+                  if (!this.props.searchValue) {
+                    this.props.history.push('/bbs')
+                  }
+                }}
+                InputProps={{endAdornment: this.props.searchValue && (
+                  <IconButton size="small" onClick={() => {
+                    this.props.onSearchChange('')
+                    this.props.history.push('/bbs')
+                  }}>
+                    <Clear />
+                  </IconButton>
+                )}}
+              />
+            </form>
+          )}
+          {overlay === Vars.overlay.board && (
+            <React.Fragment>
+              <Button
+                {...this.props.theme === Vars.theme.eink? {
+                  onClick: () => {this.props.history.push(`${pathname}/NewPost`)}
+                } : {
+                  component: Link,
+                  to: `${pathname}/NewPost`,
+                }}
+                color="inherit"
+                style={{
                   color: colors.grey[700],
                   fontSize: 16,
                   marginLeft: 16,
-                }}>
-                  <ExitToApp style={{marginRight: 4}} />
-                  登出
-                </Button>
-              </React.Fragment>
-            )}
-          </div>
+                }}
+              >
+                <PostAdd style={{marginRight: 4}} />
+                發文
+              </Button>
+            </React.Fragment>
+          )}
+          {this.props.isLogin && (
+            <React.Fragment>
+              <Button color="inherit" onClick={this.props.handleLogout} style={{
+                color: colors.grey[700],
+                fontSize: 16,
+                marginLeft: 16,
+              }}>
+                <ExitToApp style={{marginRight: 4}} />
+                登出
+              </Button>
+            </React.Fragment>
+          )}
         </Toolbar>
       </AppBar>
     )

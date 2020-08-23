@@ -90,13 +90,19 @@ class Post extends Component {
               ) : p.type === types.header? (
                 null
               ) : p.type === types.sys? (
-                <Typography key={i} variant="body1" style={{color: 'green', ...Vars.style.post}}>
+                <Typography key={i} variant="body1" style={{
+                  color: this.props.theme === Vars.theme.eink? colors.grey[900] : 'green',
+                  ...Vars.style.post,
+                }}>
                   {p.p}
                 </Typography>
               ) : p.type === types.del? (
                 <div>
                   <Linkify key={i}>
-                    <Typography variant="body1" style={{color: 'green', ...Vars.style.post}}>
+                    <Typography variant="body1" style={{
+                      color: this.props.theme === Vars.theme.eink? colors.grey[900] : 'green',
+                      ...Vars.style.post,
+                    }}>
                       {p.p}
                     </Typography>
                   </Linkify>
@@ -128,7 +134,9 @@ class Post extends Component {
                   key={i}
                   theme={this.props.theme}
                   style={{
-                    ...p.type === types.reply? {color: '#80A29C'} : {},
+                    ...p.type === types.reply? {
+                      color: this.props.theme === Vars.theme.eink? colors.grey[900] : '#80A29C',
+                    } : {},
                     ...Vars.style.post,
                   }}
                   para={p.p}

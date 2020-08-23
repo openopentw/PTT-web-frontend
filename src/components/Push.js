@@ -20,8 +20,6 @@ class Push extends Component {
       <Card
         style={{
           margin: 0,
-          // display: 'flex',
-          // backgroundColor: 'transparent',
           boxShadow: 'none',
         }}
       >
@@ -30,8 +28,6 @@ class Push extends Component {
             paddingTop: 5,
             paddingBottom: 5,
             display: 'flex',
-            justifyContent: 'flex-start',
-            textAlign: 'initial',
             width: '100%'
           }}
         >
@@ -39,7 +35,6 @@ class Push extends Component {
             display: 'flex',
             alignItems: 'center',
             width: '2em',
-            // marginRight: 10,
           }}>
             {!displayAuthor? (
               null
@@ -51,25 +46,25 @@ class Push extends Component {
               <ArrowForwardIcon/>
             )}
           </div>
-          <div style={{flexGrow: 1}}>
+          <div style={{flex: 1}}>
             {displayAuthor? (
               <Typography variant="caption" style={{color: 'dark-grey', display: 'flex'}}>
-                <div style={{flexGrow: 1}}>
+                <span style={{flex: 1}}>
                   {p.author}
-                </div>
-                <div>
+                </span>
+                <span>
                   {p.time}
-                </div>
+                </span>
                 {p.ip && (
-                  <div style={{marginLeft: 8}}>
+                  <span style={{marginLeft: 8}}>
                     {p.ip}
-                  </div>
+                  </span>
                 )}
               </Typography>
             ) : null}
             <Typography variant="body1" style={{
-              color: theme === Vars.theme.eink? 'black' : '#A78430',
-              flexGrow: 1,
+              color: theme === Vars.theme.eink? colors.grey[900] : '#A78430',
+              flex: 1,
               ...this.props.style,
             }}>
               <Linkify>

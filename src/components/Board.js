@@ -23,14 +23,14 @@ class KeysRight extends Component {
 
 class KeysUpDown extends Component {
   changeId = (keyName, e, handle) => {
-    const {postI, artSize, handlePostIChange} = this.props
+    const {postI, artSize, setPostI} = this.props
     if (keyName === 'down') {
       if (postI > 0) {
-        handlePostIChange(postI - 1)
+        setPostI(postI - 1)
       }
     } else if (keyName === 'up') {
       if (postI < artSize - 1) {
-        handlePostIChange(postI + 1)
+        setPostI(postI + 1)
       }
     }
   }
@@ -47,6 +47,14 @@ class KeysUpDown extends Component {
 }
 
 class Board extends Component {
+  state = {
+    postI: 0,
+  }
+
+  setPostI = (postI) => {
+    this.setState({postI})
+  }
+
   componentDidMount = async () => {
     const {boardTop} = this.props
     const {board} = this.props.match.params
@@ -57,16 +65,19 @@ class Board extends Component {
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
     if (boardTop.in !== board) {
       await this.props.fetchBoard(board)
+    } else {
+      this.setPostI(boardTop.postI)
     }
     elm.scrollTop = boardTop.in !== board? elm.scrollHeight : boardTop.top
   }
 
   componentWillUnmount = () => {
-    this.props.updateTop()
+    this.props.updateTop(this.state.postI)
   }
 
   render() {
-    const {theme, postList, postI, handlePostIChange} = this.props
+    const {theme, postList} = this.props
+    const {postI} = this.state
     const matchUrl = this.props.match.url
     return (
       <Container
@@ -105,7 +116,7 @@ class Board extends Component {
                   }}
                   onMouseEnter={() => {
                     if (postI !== postList.length - 1 - i) {
-                      handlePostIChange(postList.length - 1 - i)
+                      this.setPostI(postList.length - 1 - i)
                     }
                   }}
                   style={{
@@ -124,7 +135,7 @@ class Board extends Component {
                       <ArrowForwardIcon style={{color: postI === postList.length - 1 - i? 'black' : 'transparent'}}/>
                     </div>
                   )}
-                  <div style={{display: 'flex', alignItems: 'center', marginLeft: 10, width: 32}}>
+                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 10, marginRight: 10, width: 32}}>
                     <Typography variant="h6">
                       {a.push_number}
                     </Typography>
@@ -150,7 +161,7 @@ class Board extends Component {
                 <KeysUpDown
                   postI={postI}
                   artSize={postList.length}
-                  handlePostIChange={handlePostIChange}
+                  setPostI={this.setPostI}
                 />
               </React.Fragment>
             ) : null}

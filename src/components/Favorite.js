@@ -24,14 +24,14 @@ class KeysUpDown extends Component {
   scrollInt = 32
 
   changeId = (keyName, e, handle) => {
-    const {boardI, boardSize, handleBoardIChange} = this.props
+    const {boardI, boardSize, setBoardI} = this.props
     if (keyName === 'up') {
       if (boardI > 0) {
-        handleBoardIChange(boardI - 1)
+        setBoardI(boardI - 1)
       }
     } else if (keyName === 'down') {
       if (boardI < boardSize - 1) {
-        handleBoardIChange(boardI + 1)
+        setBoardI(boardI + 1)
       }
     }
   }
@@ -48,22 +48,33 @@ class KeysUpDown extends Component {
 }
 
 class Favorite extends Component {
+  state = {
+    boardI: 0,
+  }
+
+  setBoardI = (boardI) => {
+    this.setState({boardI})
+  }
+
   componentDidMount = async () => {
     this.props.updateOverlay(Vars.overlay.initial)
     const {favTop} = this.props
     if (!favTop.in) {
       await this.props.fetchFav()
+    } else {
+      this.setBoardI(favTop.boardI)
     }
     let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
     elm.scrollTop = favTop.top
   }
 
   componentWillUnmount = () => {
-    this.props.updateTop()
+    this.props.updateTop(this.state.boardI)
   }
 
   render() {
-    const {theme, boardList, boardI, handleBoardIChange} = this.props
+    const {theme, boardList} = this.props
+    const {boardI} = this.state
     const matchUrl = this.props.match.url
     return (
       <Container maxWidth="sm" style={{marginTop: 30, marginBottom: 30}}>
@@ -96,7 +107,7 @@ class Favorite extends Component {
                     component: Link,
                     to: `${matchUrl}/${b.board}`,
                   }}
-                  onMouseEnter={() => {handleBoardIChange(i)}}
+                  onMouseEnter={() => {this.setBoardI(i)}}
                   style={{
                     display: 'flex',
                     justifyContent: 'flex-start',
@@ -144,7 +155,7 @@ class Favorite extends Component {
                 <KeysUpDown
                   boardI={boardI}
                   boardSize={boardList.length}
-                  handleBoardIChange={handleBoardIChange}
+                  setBoardI={this.setBoardI}
                 />
               </React.Fragment>
             ) : null}

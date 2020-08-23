@@ -11,7 +11,7 @@ const scrollPage = (direction) => {
   let elm = document.body
   // let elm = document.scrollingElement
   // const pageSize = elm.clientHeight - 256
-  const pageSize = document.documentElement.clientHeight - 256
+  const pageSize = document.documentElement.clientHeight - 128
   if (direction === 'down') {
     elm.scrollTop = Math.min(elm.scrollTop + pageSize, elm.scrollHeight)
   } else if (direction === 'up') {

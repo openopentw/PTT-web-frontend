@@ -68,7 +68,7 @@ class NewPost extends Component {
               label="標題"
               value={this.state.titleValue}
               onChange={(e) => {this.setState({titleValue: e.target.value})}}
-              style={{flexGrow: 1}}
+              style={{flex: 1}}
               variant="outlined"
               InputProps={{style: {fontSize: 20}}}
               InputLabelProps={{style: {fontSize: 20}}}
