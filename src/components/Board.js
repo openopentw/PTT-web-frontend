@@ -87,12 +87,12 @@ class Board extends Component {
           backgroundColor: theme === Vars.theme.eink? 'white' : colors.grey[300],
         }}
       >
-          <div style={{textAlign: 'center'}}>
-            <CircularProgress
-              thickness={2}
-              size={64}
-            />
-          </div>
+        <div style={{textAlign: 'center'}}>
+          <CircularProgress
+            thickness={2}
+            size={64}
+          />
+        </div>
         {!this.props.fetching && (
           <React.Fragment>
             {postList.slice(0).reverse().map((a, i) => (
