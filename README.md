@@ -1,68 +1,32 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+#  PTT-web-frontend
 
-## Available Scripts
+配合 [openopentw/PTT-web-backend](https://github.com/openopentw/PTT-web-backend) 的 API 的前端，使用 React 實作。
 
-In the project directory, you can run:
+支援 PTT 的功能有：登入/登出、抓我的最愛、抓看板文章列表、抓文章內文、推文、發文。
 
-### `yarn start`
+## DEMO
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+DEMO 網址：https://140.112.31.150/
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+另外因為個人興趣，這個網頁也支援 Kobo Libra H2O 的上下翻頁鍵，實際使用的影片：https://youtu.be/JfPoFylbTmY
 
-### `yarn test`
+**警告：**
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+使用這個網頁登入 PTT 之後，會從 server 端登入 PTT，所以帳號密碼必須傳送到 server 端。
 
-### `yarn build`
+不過本人保證 server 端不會記錄使用者的密碼。其實我偷用密碼的話算是犯罪，可以被告的。
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+或者你也可以自己 clone 來用，就不用怕被別人記錄密碼了。
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+## 使用
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+下載：[release](https://github.com/openopentw/PTT-web-frontend/releases)
 
-### `yarn eject`
+把 [openopentw/PTT-web-backend/main.py#L19](https://github.com/openopentw/PTT-web-backend/blob/master/main.py#L19) 的 main.py 的 static_folder 指向 build 資料夾即可。
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## 自己編譯
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+```shell
+npm install
+npm run build
+```
