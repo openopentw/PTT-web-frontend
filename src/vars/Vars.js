@@ -1,7 +1,16 @@
 export default {
+  number: {
+    retryMax: 3,
+  },
   theme: {
     default: 0,
     eink: 1,
+  },
+  severity: {
+    info: "info",
+    success: "success",
+    warning: "warning",
+    error: "error",
   },
   overlay: {
     initial: 0,
@@ -12,12 +21,8 @@ export default {
   board: {
     emptyBoard: '----------',
   },
-  severity: {
-    info: "info",
-    success: "success",
-    warning: "warning",
-    error: "error",
-  },
+  boardRange: 35,
+  postRange: 35,
   postTextType: {
     empty: 0,
     header: 1,
@@ -30,7 +35,8 @@ export default {
   reg: {
     img: {
       img: /(https?:\/\/.*\.(?:png|jpeg|gif|jpg))/gi,
-      imgur: /(https?:\/\/.?\.?imgur\.com\/\w{7})(?!\.(png|jpeg|gif|jpg))/gi,
+      elseImgur: /(https?:\/\/.?\.?imgur\.com\/\w{7})(?!\.(png|jpeg|gif|jpg))/gi,
+      imgur: /(https?:\/\/.?\.?imgur\.com\/\w{7})(?:\.(png|jpeg|gif|jpg))/i,
     },
     text: {
       isDel: /^※ 文章網址: .*$/,

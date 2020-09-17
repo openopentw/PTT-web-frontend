@@ -1,10 +1,12 @@
 import React, {Component} from 'react'
 import {withRouter} from "react-router"
+import {Helmet} from "react-helmet"
 import {Link} from "react-router-dom"
 
-import {ButtonBase, CircularProgress, Container, Card, Typography} from '@material-ui/core'
+import {ButtonBase, CircularProgress, Container, Paper, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward'
+import {PostAdd} from '@material-ui/icons'
 import Hotkeys from 'react-hot-keys'
 
 import Vars from '../vars/Vars.js'
@@ -59,6 +61,9 @@ class Board extends Component {
     const {boardTop} = this.props
     const {board} = this.props.match.params
 
+    if (board !== undefined) {
+      document.title = `${board} - PTT`
+    }
     this.props.updateOverlay(Vars.overlay.board)
     this.props.updateBack({title: '我的最愛', url: '/bbs'})
     this.props.updateBoard(board)
@@ -71,22 +76,69 @@ class Board extends Component {
     elm.scrollTop = boardTop.in !== board? elm.scrollHeight : boardTop.top
   }
 
+  getSnapshotBeforeUpdate = (prevProps, prevState) => {
+    const {boardRangeBeg, postList, fetching} = prevProps
+    if (!fetching && postList.length > 0 &&
+        (boardRangeBeg !== this.props.boardRangeBeg || postList.length !== this.props.postList.length)) {
+      const boardRangeLast = Math.min(boardRangeBeg + 3 * Vars.boardRange, postList.length) - 1
+      let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+      return {
+        scrollTop: elm.scrollTop,
+        first: {
+          boardIdx: boardRangeBeg,
+          offsetTop: document.getElementById(`board-${boardRangeBeg}`).offsetTop,
+        },
+        last: {
+          boardIdx: boardRangeLast,
+          offsetTop: document.getElementById(`board-${boardRangeLast}`).offsetTop,
+        }
+      }
+    }
+    return null
+  }
+
+  componentDidUpdate = (prevProps, prevState, snapshot) => {
+    if (snapshot !== null) {
+      // console.log(snapshot)
+      const {boardRangeBeg} = this.props
+      let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+      // console.log(elm.scrollTop)
+      if (prevProps.boardRangeBeg > boardRangeBeg) { // scroll down
+        let toScroll= snapshot.first.offsetTop - document.getElementById(`board-${snapshot.first.boardIdx}`).offsetTop
+        // console.log(toScroll)
+        if (Math.abs(snapshot.scrollTop - elm.scrollTop - toScroll) > 5) { // browser has scrolled automatically
+          elm.scrollTop -= toScroll
+        }
+      } else if (prevProps.boardRangeBeg < boardRangeBeg) { // scroll up
+        let toScroll= snapshot.last.offsetTop - document.getElementById(`board-${snapshot.last.boardIdx}`).offsetTop
+        // console.log(toScroll)
+        if (Math.abs(snapshot.scrollTop - elm.scrollTop - toScroll) > 5) { // browser has scrolled automatically
+          elm.scrollTop -= toScroll
+        }
+      } else { // no scroll, but append more
+        let toScroll= snapshot.last.offsetTop - document.getElementById(`board-${snapshot.last.boardIdx}`).offsetTop
+        if (Math.abs(snapshot.scrollTop - elm.scrollTop - toScroll) > 5) { // browser has scrolled automatically
+          elm.scrollTop -= toScroll
+        }
+      }
+    }
+  }
+
   componentWillUnmount = () => {
     this.props.updateTop(this.state.postI)
   }
 
   render() {
-    const {theme, postList} = this.props
+    const {theme, postList, boardRangeBeg} = this.props
     const {postI} = this.state
     const matchUrl = this.props.match.url
+    const MyButton = theme === Vars.theme.eink? Link : ButtonBase
+    const boardLen = Math.min(boardRangeBeg + 3 * Vars.boardRange, postList.length)
     return (
-      <Container
-        maxWidth="sm"
-        style={{
-          marginTop: 30,
-          backgroundColor: theme === Vars.theme.eink? 'white' : colors.grey[300],
-        }}
-      >
+      <Container maxWidth="sm" style={{ marginTop: 30, marginBottom: 30 }} >
+        <Helmet>
+          <style>{`body { background-color: ${theme === Vars.theme.eink? 'white' : colors.grey[300]}; }`}</style>
+        </Helmet>
         <div style={{textAlign: 'center'}}>
           <CircularProgress
             thickness={2}
@@ -95,68 +147,104 @@ class Board extends Component {
         </div>
         {!this.props.fetching && (
           <React.Fragment>
-            {postList.slice(0).reverse().map((a, i) => (
-              <Card
-                key={postList.length - i}
-                style={{
-                  // margin: 15,
-                  display: 'flex',
-                  backgroundColor: theme === Vars.theme.eink? 'white': '',
-                  border: theme === Vars.theme.eink? '2px solid black' : '',
-                  borderRadius: 5,
-                  boxShadow: 'none',
-                }}
-              >
-                <ButtonBase
-                  {...!a.aid? {} : theme === Vars.theme.eink? {
-                    onClick: () => {this.props.history.push(`${matchUrl}/${a.aid}`)}
-                  } : {
+            {postList.slice(
+              boardRangeBeg, Math.min(boardRangeBeg + 3 * Vars.boardRange, postList.length)
+            ).reverse().map((a, i) => (
+              <div key={boardLen - i - 1} id={`board-${boardLen - i - 1}`} >
+                <MyButton
+                  {...theme !== Vars.theme.eink? {
                     component: Link,
-                    to: `${matchUrl}/${a.aid}`,
+                  } : {
+                    class: 'button',
                   }}
+                  to={`${matchUrl}/${a.aid}`}
                   onMouseEnter={() => {
-                    if (postI !== postList.length - 1 - i) {
-                      this.setPostI(postList.length - 1 - i)
+                    if (theme !== Vars.theme.eink && postI !== boardLen - i - 1) {
+                      this.setPostI(boardLen - i - 1)
                     }
                   }}
                   style={{
-                    display: 'flex',
-                    justifyContent: 'flex-start',
-                    textAlign: 'initial',
                     width: '100%',
-                    ...(theme === Vars.theme.eink? {
-                      paddingLeft: 32,
-                      paddingRight: 32,
-                    } : {})
+                    pointerEvents: a.aid === null? 'none' : '',
+                    ...theme === Vars.theme.eink? {
+                      display: 'block',
+                      borderStyle: 'solid',
+                      borderColor: 'black',
+                      borderWidth: '1px 0 0 0',
+                      borderRadius: 0,
+                    } : {
+                      justifyContent: 'flex-start',
+                      backgroundColor: colors.grey[200],
+                    },
                   }}
                 >
-                  {theme === Vars.theme.eink? null : (
+                  {theme !== Vars.theme.eink && !window.mobileCheck() && (
                     <div style={{display: 'flex', alignItems: 'center', marginLeft: 10}}>
-                      <ArrowForwardIcon style={{color: postI === postList.length - 1 - i? 'black' : 'transparent'}}/>
+                      <ArrowForwardIcon style={{color: postI === boardLen - i - 1? 'black' : 'transparent'}}/>
                     </div>
                   )}
-                  <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: 10, marginRight: 10, width: 32}}>
+                  <div style={{
+                    ...theme === Vars.theme.eink? {
+                      display: 'inline-block',
+                    } : {
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    },
+                    textAlign: 'center', marginLeft: 10, marginRight: 10, width: 32,
+                  }}>
                     <Typography variant="h6">
                       {a.push_number}
                     </Typography>
                   </div>
-                  <div style={{}}>
+                  <div style={{
+                    ...theme === Vars.theme.eink? {
+                      display: 'inline-block',
+                      width: 'calc(90% - 32px)',
+                    } : {
+                    },
+                  }}>
                     <div style={{paddingTop: 8, paddingBottom: 8}}>
                       <Typography variant="h6" color="textPrimary" style={{fontWeight: 'normal'}}>
                         {a.title}
                       </Typography>
                       <Typography variant="subtitle1" color="textSecondary">
-                        {a.author}
+                        {a.aid === null && '(本文已被刪除) '}{a.author}
                       </Typography>
                     </div>
                   </div>
-                </ButtonBase>
-              </Card>
+                </MyButton>
+              </div>
             ))}
-            {theme !== Vars.theme.eink? (
+            {theme === Vars.theme.eink && (
+              <div style={{borderTop: '1px solid black'}}/>
+            )}
+            {theme === Vars.theme.eink && (
+              <div style={{
+                marginTop: 32,
+                textAlign: 'center',
+              }} >
+                <Link
+                  to={`/bbs/${this.props.match.params.board}/NewPost`}
+                  class="button"
+                  style={{
+                    borderStyle: 'solid',
+                    borderColor: 'black',
+                    borderWidth: 1,
+                    borderRadius: 5,
+                    padding: 8,
+                    color: 'black',
+                    fontSize: 20,
+                  }}
+                >
+                  發文
+                </Link>
+              </div>
+            )}
+            {theme !== Vars.theme.eink && !window.mobileCheck() && (
               <React.Fragment>
                 <KeysRight handlePostChange={() => {
-                  this.props.history.push(`${matchUrl}/${postList[postI].aid}`)
+                  if (postList[postI].aid !== null) {
+                    this.props.history.push(`${matchUrl}/${postList[postI].aid}`)
+                  }
                 }} />
                 <KeysUpDown
                   postI={postI}
@@ -164,7 +252,7 @@ class Board extends Component {
                   setPostI={this.setPostI}
                 />
               </React.Fragment>
-            ) : null}
+            )}
           </React.Fragment>
         )}
       </Container>

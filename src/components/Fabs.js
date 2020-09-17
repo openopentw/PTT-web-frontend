@@ -11,7 +11,7 @@ const scrollPage = (direction) => {
   let elm = document.body
   // let elm = document.scrollingElement
   // const pageSize = elm.clientHeight - 256
-  const pageSize = document.documentElement.clientHeight - 128
+  const pageSize = document.documentElement.clientHeight - 64
   if (direction === 'down') {
     elm.scrollTop = Math.min(elm.scrollTop + pageSize, elm.scrollHeight)
   } else if (direction === 'up') {
@@ -35,48 +35,35 @@ class KeysUpDown extends Component {
   }
 }
 
-class Fabs extends Component {
-  componentDidMount = () => {
-    // console.log('[Fab] did mount')
-  }
+const buttonStyle = {
+  display: 'inline-block',
+  overflow: 'hidden',
+  border: '1px solid black',
+  backgroundColor: 'white',
+  width: 32,
+  height: 32,
+  padding: 4,
+  fontSize: 64,
+  borderRadius: 5,
+  textAlign: 'center',
+  lineHeight: 0.1,
+}
 
+class Fabs extends Component {
   render() {
     return (
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 8,
-          right: 8,
-        }}
-      >
+      <div style={{
+        position: 'fixed',
+        bottom: 8,
+        right: 8,
+      }} >
         {/*
-        <div style={{marginBottom: 4}}>
-          <Fab
-            onClick={() => {scrollPage('up')}}
-            style={{
-              border: '2px solid black',
-              backgroundColor: 'white',
-              boxShadow: 'none',
-              fontSize: 24,
-            }}
-          >
-            <ArrowUpwardIcon
-            />
-          </Fab>
-        </div>
-        <div>
-          <Fab
-            onClick={() => {scrollPage('down')}}
-            style={{
-              border: '2px solid black',
-              backgroundColor: 'white',
-              boxShadow: 'none',
-              fontSize: 24,
-            }}
-          >
-            <ArrowDownwardIcon />
-          </Fab>
-        </div>
+        <a class="button" href="javascript:void(0)" onClick={scrollPage('up')} style={buttonStyle} >
+          <ArrowUpwardIcon fontSize="inherit" />
+        </a>
+        <a class="button" href="javascript:void(0)" onClick={scrollPage('down')} style={buttonStyle} >
+          <ArrowDownwardIcon fontSize="inherit" />
+        </a>
         */}
         <KeysUpDown />
       </div>

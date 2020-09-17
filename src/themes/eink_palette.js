@@ -8,7 +8,7 @@ export default {
   secondary: colors.grey,
   text: {
     primary: black,
-    secondary: black,
+    secondary: colors.grey[800],
     disabled: black,
     hint: black,
   },

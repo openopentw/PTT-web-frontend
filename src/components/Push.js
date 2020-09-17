@@ -8,19 +8,20 @@ import Linkify from 'linkifyjs/react'
 
 import Vars from '../vars/Vars.js'
 
-const imgReg = /(https?:\/\/.*\.(?:png|jpeg|gif|jpg))/gi
-const imgurReg = /(https?:\/\/?(m\.)imgur\.com\/.......)(?!\.(png|jpeg|gif|jpg))/gi
-
 const vh = document.documentElement.clientHeight
 
 class Push extends Component {
   render() {
-    const {p, theme, displayAuthor} = this.props
+    const {p, theme} = this.props
+    // const {p} = this.props
+    // const theme = Vars.theme.eink
+    const MyButton = theme === Vars.theme.eink? 'div' : ButtonBase
     return (
       <Card
         style={{
           margin: 0,
           boxShadow: 'none',
+          backgroundColor: theme === Vars.theme.eink? 'white' : colors.grey[200],
         }}
       >
         <div
@@ -32,28 +33,50 @@ class Push extends Component {
           }}
         >
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            width: '2em',
+            ...theme === Vars.theme.eink? {
+              display: 'inline-block',
+              lineHeight: 0.1,
+              fontSize: 48,
+              width: 36,
+            } : {
+              display: 'flex',
+              alignItems: 'center',
+              fontSize: 24,
+              width: '1.5em',
+            },
           }}>
-            {!displayAuthor? (
+            {!p.displayAuthor? (
               null
             ) : p.type === '推'? (
-              <ThumbUpIcon fontSize="small" style={{color: colors.green[500]}} />
+              <ThumbUpIcon
+                fontSize="inherit"
+                style={{color: theme === Vars.theme.eink? '' : colors.green[500]}}
+              />
             ) : p.type === '噓'? (
-              <ThumbDownIcon fontSize="small" style={{color: colors.red[500]}} />
+              <ThumbDownIcon
+                fontSize="inherit" style={{color: theme === Vars.theme.eink? '' : colors.red[500]}}
+              />
             ) : (
-              <ArrowForwardIcon/>
+              <ArrowForwardIcon fontSize="inherit" />
             )}
           </div>
-          <div style={{flex: 1}}>
-            {displayAuthor? (
+          <div style={{
+            ...theme === Vars.theme.eink? {
+              display: 'inline-block',
+              width: 'calc(100% - 40px)',
+            } : {
+              flex: 1,
+            },
+          }}>
+            {p.displayAuthor && (
               <Typography variant="caption" style={{color: 'dark-grey', display: 'flex'}}>
-                <span style={{flex: 1}}>
-                  {p.author}
-                </span>
+                <span style={{marginRight: 8}}><b>{p.author}</b></span>
+                <span style={{marginRight: 8}}>({p.pushCnt + 1}樓)</span>
+                <span style={{flex: 1}} />
                 <span>
-                  {p.time}
+                  {p.time.split(' ').map((t, i) => (
+                    <span key={i} style={{marginRight: 8}}>{t}</span>
+                  ))}
                 </span>
                 {p.ip && (
                   <span style={{marginLeft: 8}}>
@@ -61,7 +84,7 @@ class Push extends Component {
                   </span>
                 )}
               </Typography>
-            ) : null}
+            )}
             <Typography variant="body1" style={{
               color: theme === Vars.theme.eink? colors.grey[900] : '#A78430',
               flex: 1,
@@ -79,17 +102,17 @@ class Push extends Component {
             marginTop: 16,
             marginBottom: 16,
           }}>
-            <ButtonBase
+            <MyButton
               style={{
                 maxWidth: '100%',
               }}
               onClick={() => {this.props.showLightbox(p.img.idx + i)}}
             >
-              <img src={url} alt="" style={{
+              <img src={url.length > 1? url[1] : url[0]} alt="" style={{
                 maxWidth: '100%',
-                maxHeight: this.props.theme === Vars.theme.eink? 0.7 * vh : '70vh',
+                maxHeight: theme === Vars.theme.eink? 0.7 * vh : '70vh',
               }} />
-            </ButtonBase>
+            </MyButton>
           </div>
         ))}
       </Card>

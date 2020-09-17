@@ -41,7 +41,7 @@ class Login extends Component {
           <style>{`body { background-color: ${theme === Vars.theme.eink? 'white' : colors.grey[300]}; }`}</style>
         </Helmet>
         <Typography variant="h2" gutterBottom>
-          登入
+          登入 PTT
         </Typography>
         {/* <TestInfo /> */}
         <form onSubmit={(e) => {handleLogin(); e.preventDefault()}} >

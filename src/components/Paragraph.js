@@ -1,6 +1,5 @@
 import React, {Component} from 'react'
 import {ButtonBase, Typography} from '@material-ui/core'
-import {colors} from '@material-ui/core'
 import Linkify from 'linkifyjs/react'
 
 import Vars from '../vars/Vars.js'
@@ -13,7 +12,8 @@ class Paragraph extends Component {
   }
 
   render() {
-    const {para} = this.props
+    const {theme, para} = this.props
+    const MyButton = theme === Vars.theme.eink? 'div' : ButtonBase
     return (
       <React.Fragment>
         <Typography variant="body1" style={this.props.style}>
@@ -27,17 +27,19 @@ class Paragraph extends Component {
             marginTop: 16,
             marginBottom: 16,
           }}>
-            <ButtonBase
+            <MyButton
               style={{
                 maxWidth: '100%',
               }}
-              onClick={() => {this.props.showLightbox(this.props.img.idx + i)}}
+              {...theme === Vars.theme.eink? {} : {
+                onClick: () => {this.props.showLightbox(this.props.img.idx + i)}
+              }}
             >
-              <img src={url} alt="" style={{
+              <img src={url.length > 1? url[1] : url[0]} alt="" style={{
                 maxWidth: '100%',
-                maxHeight: this.props.theme === Vars.theme.eink? 0.7 * vh : '70vh',
+                maxHeight: theme === Vars.theme.eink? 0.7 * vh : '70vh',
               }} />
-            </ButtonBase>
+            </MyButton>
           </div>
         ))}
       </React.Fragment>

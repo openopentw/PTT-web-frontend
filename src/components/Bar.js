@@ -1,9 +1,9 @@
 import React, {Component} from 'react'
 import {withRouter} from "react-router"
 import {Link} from "react-router-dom"
-import {AppBar, Button, CircularProgress, IconButton, Toolbar, Tabs, Tab, TextField, Typography} from '@material-ui/core'
+import {AppBar, Button, IconButton, Toolbar, Tabs, Tab, TextField, Typography} from '@material-ui/core'
 import {colors} from '@material-ui/core'
-import {ArrowBack, Clear, Directions, ExitToApp, FindInPage, PostAdd} from '@material-ui/icons'
+import {ArrowBack, Clear, ExitToApp, PostAdd} from '@material-ui/icons'
 import Hotkeys from 'react-hot-keys'
 
 import Vars from '../vars/Vars.js'
@@ -14,6 +14,17 @@ class KeyGoBack extends Component {
       <Hotkeys
         keyName="left"
         onKeyUp={this.props.goBack}
+      />
+    )
+  }
+}
+
+class KeySearch extends Component {
+  render() {
+    return (
+      <Hotkeys
+        keyName="/"
+        onKeyUp={() => {document.getElementById('search-board').focus()}}
       />
     )
   }
@@ -30,21 +41,21 @@ const tabStyle = (focus) => ({
 
 class Bar extends Component {
   render() {
-    const {overlay} = this.props
+    const {overlay, theme} = this.props
     const {pathname} = this.props.location
+    const MyButton = theme === Vars.theme.eink? 'div': Button
     return (
       <AppBar
         color="default"
         position="sticky"
-        style={{ backgroundColor: this.props.theme === Vars.theme.eink? 'white' : '' }}
+        style={{ backgroundColor: theme === Vars.theme.eink? 'white' : '' }}
       >
         <Toolbar variant="dense">
           <div style={{marginRight: 16}}>
             {overlay !== Vars.overlay.initial && (
               <React.Fragment>
-                <Button
-                  {...this.props.theme === Vars.theme.eink? {
-                    onClick: () => {this.props.history.push(this.props.back.url)}
+                <MyButton
+                  {...theme === Vars.theme.eink? {
                   } : {
                     component: Link,
                     to: this.props.back.url,
@@ -56,12 +67,34 @@ class Bar extends Component {
                     color: colors.grey[700],
                     fontSize: 16,
                     textTransform: 'none',
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  <ArrowBack style={{marginRight: 4}}/>
-                  {this.props.back.title}
-                </Button>
-                <KeyGoBack goBack={() => {this.props.history.push(this.props.back.url)}} />
+                  {theme === Vars.theme.eink? (
+                    <Link to={this.props.back.url} style={{color: 'black', textDecoration: 'none', borderBottom: '2px solid grey'}}>
+                      <ArrowBack/>
+                      <span style={{marginLeft: 4}}>
+                        {this.props.back.title}
+                      </span>
+                    </Link>
+                  ) : (
+                    <React.Fragment>
+                      <ArrowBack/>
+                      {!window.mobileCheck() && (
+                        <span style={{marginLeft: 4}}>
+                          {this.props.back.title}
+                        </span>
+                      )}
+                    </React.Fragment>
+                  )}
+                </MyButton>
+                {theme !== Vars.theme.eink && (
+                  <React.Fragment>
+                    <KeySearch />
+                    <KeyGoBack goBack={() => {this.props.history.push(this.props.back.url)}} />
+                  </React.Fragment>
+                )}
               </React.Fragment>
             )}
           </div>
@@ -107,7 +140,7 @@ class Bar extends Component {
             </React.Fragment>
           )}
           <div style={{flex: 1}}></div>
-          {this.props.theme !== Vars.theme.eink && this.props.isLogin && overlay === Vars.overlay.initial && (
+          {this.props.isLogin && overlay === Vars.overlay.initial && (
             <form
               onSubmit={(e) => {e.preventDefault()}}
               style={{display: 'flex', alignItems: 'center'}}
@@ -115,8 +148,12 @@ class Bar extends Component {
               <TextField
                 label="搜尋看板"
                 variant="outlined"
+                id="search-board"
                 size="small"
                 value={this.props.searchValue}
+                style={{
+                  width: theme === Vars.theme.eink? '10em' : '',
+                }}
                 onChange={(e) => {this.props.onSearchChange(e.target.value)}}
                 onFocus={() => {this.props.history.push('/search')}}
                 onBlur={() => {
@@ -138,7 +175,7 @@ class Bar extends Component {
           {overlay === Vars.overlay.board && (
             <React.Fragment>
               <Button
-                {...this.props.theme === Vars.theme.eink? {
+                {...theme === Vars.theme.eink? {
                   onClick: () => {this.props.history.push(`${pathname}/NewPost`)}
                 } : {
                   component: Link,
@@ -151,8 +188,12 @@ class Bar extends Component {
                   marginLeft: 16,
                 }}
               >
-                <PostAdd style={{marginRight: 4}} />
-                發文
+                <PostAdd />
+                {!window.mobileCheck() && (
+                  <span style={{marginLeft: 4}} >
+                    發文
+                  </span>
+                )}
               </Button>
             </React.Fragment>
           )}
@@ -161,10 +202,13 @@ class Bar extends Component {
               <Button color="inherit" onClick={this.props.handleLogout} style={{
                 color: colors.grey[700],
                 fontSize: 16,
-                marginLeft: 16,
               }}>
-                <ExitToApp style={{marginRight: 4}} />
-                登出
+                <ExitToApp />
+                {!window.mobileCheck() && (
+                  <span style={{marginLeft: 4}} >
+                    登出
+                  </span>
+                )}
               </Button>
             </React.Fragment>
           )}

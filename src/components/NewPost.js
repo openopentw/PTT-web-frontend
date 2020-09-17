@@ -14,24 +14,40 @@ const style = {
 
 class NewPost extends Component {
   state = {
+    submitting: false,
     categoryValue: '',
     titleValue: '',
     contentValue: '',
   }
 
-  clear = async () => {
-    await this.setState({
+  addPost = () => {
+    const {board} = this.props
+    this.props.addPost(
+      board,
+      this.state.categoryValue,
+      this.state.titleValue,
+      this.state.contentValue,
+    )
+    this.setState({
       categoryValue: '',
       titleValue: '',
       contentValue: '',
+      submitting: false,
     })
+    this.props.history.push(`/bbs/${board}`)
   }
 
-  componentDidMount = async () => {
+  componentDidMount = () => {
+    document.title = '發表文章 - PTT'
     const {board} = this.props
     this.props.updateOverlay(Vars.overlay.addPost)
     this.props.updateBack({title: board, url: `/bbs/${board}`})
-    await this.clear()
+    let elm = this.props.theme === Vars.theme.eink? document.body : document.scrollingElement
+    elm.scrollTop = 0
+  }
+
+  componentWillUnmount = () => {
+    this.props.updateTop()
   }
 
   render() {
@@ -42,16 +58,10 @@ class NewPost extends Component {
         </Helmet>
         <form onSubmit={async (e) => {
           e.preventDefault()
-          const {board} = this.props
-          await this.props.addPost(
-            board,
-            this.state.categoryValue,
-            this.state.titleValue,
-            this.state.contentValue,
-          )
-          await this.clear()
-          await this.props.updateTop()
-          this.props.history.push(`/bbs/${board}`)
+          if (!this.state.submitting) {
+            this.setState({submitting: true})
+            this.addPost()
+          }
         }}>
           <div style={{display: 'flex', ...style}}>
             <TextField

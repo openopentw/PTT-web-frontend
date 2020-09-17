@@ -1,9 +1,18 @@
 import React, {Component} from 'react'
-import {Button, IconButton, TextField, Typography} from '@material-ui/core'
+import {Button, IconButton, TextField} from '@material-ui/core'
 import {colors} from '@material-ui/core'
-import {ArrowForward, Send, FindInPage, ThumbDown, ThumbUp, Reply as ReplyIcon} from '@material-ui/icons'
+import {ArrowForward, FindInPage, ThumbDown, ThumbUp, Reply as ReplyIcon} from '@material-ui/icons'
 
 import Vars from '../vars/Vars.js'
+
+const iconStyle = (theme) => (
+  theme === Vars.theme.eink? {
+    fontSize: 48,
+    lineHeight: 0.1,
+  } : {
+    fontSize: 24,
+  }
+)
 
 class Reply extends Component {
   state = {
@@ -11,13 +20,15 @@ class Reply extends Component {
   }
 
   addPush = async (type) => {
-    await this.props.addPush(type, this.state.pushValue)
-    this.setState({pushValue: ''})
-    await this.props.fetchPost(true)
+    if (this.state.pushValue !== '') {
+      await this.props.addPush(type, this.state.pushValue)
+      this.setState({pushValue: ''})
+      await this.props.fetchPost(true)
+    }
   }
 
   render() {
-    const {para} = this.props
+    const {theme} = this.props
     return (
       <div style={{
         display: 'flex',
@@ -38,16 +49,16 @@ class Reply extends Component {
             variant="outlined"
             InputProps={{
               style: {fontSize: 20},
-              endAdornment: this.state.pushValue && (
+              endAdornment: (
                 <React.Fragment>
-                  <IconButton onClick={() => {this.addPush('推')}}>
-                    <ThumbUp style={{color: colors.green[500]}} />
+                  <IconButton style={iconStyle(theme)} size="small" onClick={() => {this.addPush('推')}}>
+                    <ThumbUp fontSize="inherit" style={{color: colors.green[500]}} />
                   </IconButton>
-                  <IconButton onClick={() => {this.addPush('→')}}>
-                    <ArrowForward/>
+                  <IconButton style={iconStyle(theme)} size="small" onClick={() => {this.addPush('→')}}>
+                    <ArrowForward fontSize="inherit" />
                   </IconButton>
-                  <IconButton onClick={() => {this.addPush('噓')}}>
-                    <ThumbDown style={{color: colors.red[500]}} />
+                  <IconButton style={iconStyle(theme)} size="small" onClick={() => {this.addPush('噓')}}>
+                    <ThumbDown fontSize="inherit" style={{color: colors.red[500]}} />
                   </IconButton>
                 </React.Fragment>
               ),
@@ -55,7 +66,7 @@ class Reply extends Component {
             InputLabelProps={{style: {fontSize: 20}}}
           />
         </form>
-        <div>
+        {/*<div>
           <Button
             edge="start"
             color="inherit"
@@ -68,8 +79,6 @@ class Reply extends Component {
             <ReplyIcon style={{marginRight: 4}}/>
             回文
           </Button>
-        </div>
-        <div>
           <Button
             edge="start"
             color="inherit"
@@ -82,7 +91,7 @@ class Reply extends Component {
             <FindInPage style={{marginRight: 4}}/>
             搜尋相關
           </Button>
-        </div>
+        </div>*/}
       </div>
     )
   }

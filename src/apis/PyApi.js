@@ -33,7 +33,7 @@ class Api {
   }
 
   preventDisconnect() {
-    this.getFavBoard()
+    fetch('/api/prevent_logout')
   }
 
   async getFavBoard() {
@@ -120,17 +120,19 @@ class Api {
   }
 
   async addPost(board, category, title, content) {
-    const res = await fetch('/api/add_post', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({board, category, title, content})
-    })
-    const con = await res.json()
-    return con
+    if (title != '' && content != '') {
+      const res = await fetch('/api/add_post', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({board, category, title, content: content.replace('\n', '\r\n')})
+      })
+      const con = await res.json()
+      return con
+    }
   }
 }
 
