@@ -101,16 +101,24 @@ class Bar extends Component {
           {this.props.fetching? null : (
             <React.Fragment>
               {(!this.props.isLogin)? (
-                <Tabs value={pathname} >
-                  <Tab label="登入" value="/login" component={Link} to="/login"
-                    style={tabStyle(pathname === '/login')}
-                  />
-                  <Tab label="關於本站" value="/about" component={Link} to="/about"
-                    style={tabStyle(pathname === '/about')}
-                  />
-                </Tabs>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                  <Typography variant="h6" style={{color: colors.grey[500], marginRight: 10}}>
+                    PTT
+                  </Typography>
+                  <Tabs value={pathname} >
+                    <Tab label="登入" value="/login" component={Link} to="/login"
+                      style={tabStyle(pathname === '/login')}
+                    />
+                    <Tab label="關於本站" value="/about" component={Link} to="/about"
+                      style={tabStyle(pathname === '/about')}
+                    />
+                  </Tabs>
+                </div>
               ) : overlay === Vars.overlay.initial? (
-                <div style={{display: 'flex'}}>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                  <Typography variant="h6" style={{color: colors.grey[500], marginRight: 10}}>
+                    PTT
+                  </Typography>
                   <Tabs value={pathname} >
                     <Tab label="我的最愛" value="/bbs" component={Link} to="/bbs"
                       style={tabStyle(pathname === '/bbs')}
@@ -174,6 +182,7 @@ class Bar extends Component {
           )}
           {overlay === Vars.overlay.board && (
             <React.Fragment>
+              {/*
               <Button
                 {...theme === Vars.theme.eink? {
                   onClick: () => {this.props.history.push(`${pathname}/NewPost`)}
@@ -195,6 +204,7 @@ class Bar extends Component {
                   </span>
                 )}
               </Button>
+              */}
             </React.Fragment>
           )}
           {this.props.isLogin && (

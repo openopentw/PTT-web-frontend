@@ -222,6 +222,7 @@ class Board extends Component {
                 marginTop: 32,
                 textAlign: 'center',
               }} >
+                {/*
                 <Link
                   to={`/bbs/${this.props.match.params.board}/NewPost`}
                   class="button"
@@ -237,6 +238,7 @@ class Board extends Component {
                 >
                   發文
                 </Link>
+                */}
               </div>
             )}
             {theme !== Vars.theme.eink && !window.mobileCheck() && (
